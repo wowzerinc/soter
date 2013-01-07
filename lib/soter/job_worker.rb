@@ -35,7 +35,6 @@ module Soter
       @log << message + "\n"
     end
 
-    #TODO: Retry logic missing
     def perform
       logger.sync = true if logger.respond_to?(:sync=)
 
@@ -80,5 +79,6 @@ module Soter
       log "#{process_id}: Harakiri"
       logger.close
     end #start
+
   end
 end
