@@ -1,3 +1,8 @@
+require_relative 'soter/job_worker'
+
+require 'mongo'
+require 'mongo_queue'
+
 module Soter
 
   require 'mongo_queue'
@@ -41,12 +46,11 @@ module Soter
   private
 
   def self.database
-    @database ||= Mongoid.database.connection
+    @database ||= Mongo::Connection.new
   end
 
   def self.queue
-    @queue ||= Mongo::Queue.new(database, 
-                                Soter.config.queue_settings)
+    @queue ||= Mongo::Queue.new(database, Soter.config.queue_settings)
   end
 
   def self.workers
@@ -62,14 +66,14 @@ module Soter
 
   def self.dispatch_worker(handler)
     if workers.count < default_workers
-      JobWorker.new(handler, logger).start
+      JobWorker.start(handler)
     else
       queue.cleanup! #remove stuck locks
     end
   end
 
   def self.default_workers
-    Soter.config.queue_settings[:workers] || 5
+    Soter.config.workers || 5
   end
 
 end
