@@ -3,6 +3,10 @@ module Soter
 
     require 'digest/md5'
 
+    def self.start(handler)
+      self.new(handler, Soter.logger).start
+    end
+
     def initialize(handler, logger)
       logfile = Soter.config.logfile || 'log/soter.log'
       @job_handler_class = handler
