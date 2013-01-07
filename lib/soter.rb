@@ -2,7 +2,19 @@ module Soter
 
   require 'mongo_queue'
 
-  class Config < Struct.new(:fork, :logfile, :queue_settings)
+  class Config < Struct.new(:fork, :logfile, :host, :port, :db, :workers)
+
+    def queue_settings
+      { 
+        host:       self.host,   
+        port:       self.port,
+        database:   self.db, 
+        collection: "mongo_queue",
+        timeout:    300,
+        attempts:   3
+      }
+    end
+
   end
 
   def self.config
