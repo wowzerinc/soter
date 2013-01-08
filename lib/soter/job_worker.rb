@@ -7,16 +7,6 @@ module Soter
       self.new(handler, Soter.logger).start
     end
 
-    def initialize(handler, logger)
-      logfile = Soter.config.logfile || 'log/soter.log'
-      @job_handler_class = handler
-      @log = logger || File.open("#{logfile}", "a")
-    end
-
-    def fork?
-      Soter.config.fork
-    end
-
     def start
       if fork?
         fork do
@@ -27,49 +17,49 @@ module Soter
       end
     end
 
-    def logger
-      @log
+    def initialize(handler, logger)
+      @job_handler = handler
+      @queue       = Soter.queue
+      
+      setup_log(logger)
+      @queue.cleanup! # remove expired locks
     end
 
-    def log(message)
-      @log << message + "\n"
+    def setup_log(logger)
+      logfile = Soter.config.logfile || 'log/soter.log'
+      @log    = logger || File.open("#{logfile}", "a")
+
+      logger.sync = true if logger.respond_to?(:sync=)
     end
 
     def perform
-      logger.sync = true if logger.respond_to?(:sync=)
-
       process_id = Digest::MD5.
         hexdigest("#{Socket.gethostname}-#{Process.pid}-#{Thread.current}")
 
       log "#{process_id}: Spawning"
 
-      queue = Soter.queue
-
-      queue.cleanup! # remove expired locks
-
-      while(job = queue.lock_next(process_id))
+      while(job = @queue.lock_next(process_id))
         log "#{process_id}: Starting work on job #{job['_id']}"
         log "#{process_id}: Job info =>"
+
         job.each {
-          |key, value| log "#{process_id}: {#{key} : #{value}}" }
-
+          |key, value| log  "#{process_id}: {#{key} : #{value}}" }
           begin
-            job_handler = @job_handler_class.new(job)
-
+            job_handler = @job_handler.new(job)
             result = job_handler.perform
             log "#{process_id}: " + job_handler.message
 
             if job_handler.success?
-              queue.complete(result, process_id)
+              @queue.complete(result, process_id)
               log "#{process_id}: Completed job #{job['_id']}"
             else
-              queue.error(result, job_handler.message)
+              @queue.error(result, job_handler.message)
               log "#{process_id}: Failed job #{job['_id']}"
             end
 
             sleep(1) if fork?
           rescue Exception => e
-            queue.error(job, e.message)
+            @queue.error(job, e.message)
             log "#{process_id}: Failed job #{job['_id']}" +
               " with error #{e.message}"
             log "#{process_id}: Backtrace =>"
@@ -79,6 +69,20 @@ module Soter
       log "#{process_id}: Harakiri"
       logger.close
     end #start
+
+    def fork?
+      Soter.config.fork
+    end
+
+
+    def logger
+      @log
+    end
+
+    def log(message)
+      @log << message + "\n"
+    end
+
 
   end
 end
