@@ -1,3 +1,4 @@
+require_relative 'soter/config'
 require_relative 'soter/job_worker'
 
 require 'mongo'
@@ -7,24 +8,8 @@ module Soter
 
   require 'mongo_queue'
 
-  class Config < Struct.new(:fork, :logfile, :logger, :host, :port, :db,
-                            :workers)
-
-    def queue_settings
-      { 
-        host:       self.host,   
-        port:       self.port,
-        database:   self.db, 
-        collection: "mongo_queue",
-        timeout:    300,
-        attempts:   3
-      }
-    end
-
-  end
-
   def self.config
-    @config ||= Config.new
+    @config ||= Soter::Config.new
   end
 
   def self.enqueue(handler, options)
