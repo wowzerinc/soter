@@ -55,7 +55,7 @@ module Soter
 
   def self.workers
     begin
-      result = queue.send(:collection).
+      result = @queue.send(:collection).
         distinct(:locked_by, {:locked_by => {"$ne" => nil}})
     rescue
       result = []
