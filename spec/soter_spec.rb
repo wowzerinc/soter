@@ -40,4 +40,22 @@ describe Soter do
     Soter.logger.should == logger
   end
 
+  it "dispatches at most the specified number of workers" do
+    Soter.queue.should_receive(:insert).with(options)
+    Soter.queue.should_receive(:cleanup!).once
+    
+    Soter.enqueue(handler, options)
+  end
+
+  context "Forking" do
+
+    before :each do
+      Soter.config.fork = true
+    end
+
+    it "dispatches workers sucessfully" do
+      pending("Concurrent tests are hard, what should we test?")
+    end
+
+  end
 end

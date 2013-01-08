@@ -10,4 +10,12 @@ end
 class FakeHandler
   def perform
   end
+
+  def message
+    'message'
+  end
+  
+  def success?
+    true
+  end
 end
