@@ -4,13 +4,16 @@ ruby + mongoid background jobs library
 
 ## Configure
 
-Install the gem
+* Install the gem
+
     gem install soter
 
-Require it
+* Require it
+
     require 'soter'
 
-Initialize configuration values
+* Initialize configuration values
+    
     # Worker should be forked? (Set to false for testing purposes)
     Soter.config.fork    = true
     
