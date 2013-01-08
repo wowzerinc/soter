@@ -13,24 +13,29 @@ Require it
     require 'soter'
 
 Initialize configuration values
+   
+    # REQUIRED
     
+    # Host of mongo database
+    Soter.config.host = 'localhost'
+    
+    # Name of mongo database
+    Soter.config.db = 'development'
+
+    # OPTIONAL
+
+    # Port of mongo database
+    Soter.config.port = '9292'
+
     # Worker should be forked? (Set to false for testing purposes)
-    Soter.config.fork    = true
+    Soter.config.fork = true
     
     # Logger object to be used
-    Soter.config.logger  = logger
+    Soter.config.logger = logger
 
     # File to log if logger is not defined
     Soter.config.logfile = 'log/dev.log'
     
-    # Host of mongo database
-    Soter.config.host    = 'localhost'
-    
-    # Port of mongo database
-    Soter.config.port    = '9292'
-
-    # Name of mongo database
-    Soter.config.db      = 'development'
 
     # Max number of workers (defaul is 5)
     Soter.config.workers = 4
