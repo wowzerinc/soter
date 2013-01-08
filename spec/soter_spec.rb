@@ -2,9 +2,10 @@ require 'spec_helper'
 
 describe Soter do
 
-  let(:handler) { FakeHandler.new }
+  let(:handler) { FakeHandler }
   let(:options) { {option: 'an_option'} }
   let(:logger)  { FakeLogger.new }
+  let(:job_options) { options.merge({'handler_class' => 'FakeHandler'}) }
 
   it 'configures correctly' do
     Soter.config.host = 'host'
@@ -22,8 +23,8 @@ describe Soter do
   end
 
   it 'enqueues a job' do
-    Soter.queue.should_receive(:insert).with(options)
-    Soter::JobWorker.should_receive(:start).with(handler)
+    Soter.queue.should_receive(:insert).with(job_options)
+    Soter::JobWorker.any_instance.should_receive(:start)
 
     Soter.enqueue(handler, options)
   end
@@ -41,7 +42,7 @@ describe Soter do
   end
 
   it "dispatches at most the specified number of workers" do
-    Soter.queue.should_receive(:insert).with(options)
+    Soter.queue.should_receive(:insert).with(job_options)
     Soter.queue.should_receive(:cleanup!).once
     
     Soter.enqueue(handler, options)

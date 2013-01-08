@@ -7,7 +7,8 @@ module Soter
 
   require 'mongo_queue'
 
-  class Config < Struct.new(:fork, :logfile, :host, :port, :db, :workers)
+  class Config < Struct.new(:fork, :logfile, :logger, :host, :port, :db,
+                            :workers)
 
     def queue_settings
       { 
@@ -27,8 +28,8 @@ module Soter
   end
 
   def self.enqueue(handler, options)
-    queue.insert(options)
-    dispatch_worker(handler)
+    queue.insert(options.merge({'handler_class' =>  handler.to_s}))
+    dispatch_worker
   end
 
   def self.dequeue(options)
@@ -64,9 +65,9 @@ module Soter
     result || []
   end
 
-  def self.dispatch_worker(handler)
+  def self.dispatch_worker
     if workers.count < default_workers
-      JobWorker.start(handler)
+      JobWorker.new.start
     else
       queue.cleanup! #remove stuck locks
     end

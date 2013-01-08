@@ -3,10 +3,6 @@ module Soter
 
     require 'digest/md5'
 
-    def self.start(handler)
-      self.new(handler, Soter.logger).start
-    end
-
     def start
       if fork?
         fork do
@@ -17,19 +13,12 @@ module Soter
       end
     end
 
-    def initialize(handler, logger)
-      @job_handler = handler
+    def initialize
       @queue       = Soter.queue
-      
-      setup_log(logger)
+      @log         = Soter.config.logger || File.open("#{logfile}", "a")
+
+      @log.sync = true if @log.respond_to?(:sync=)
       @queue.cleanup! # remove expired locks
-    end
-
-    def setup_log(logger)
-      logfile = Soter.config.logfile || 'log/soter.log'
-      @log    = logger || File.open("#{logfile}", "a")
-
-      logger.sync = true if logger.respond_to?(:sync=)
     end
 
     def perform
@@ -44,9 +33,11 @@ module Soter
 
         job.each {
           |key, value| log  "#{process_id}: {#{key} : #{value}}" }
+
           begin
-            job_handler = @job_handler.new(job)
-            result = job_handler.perform
+            job_handler = eval(job['handler_class']).new(job)
+            result      = job_handler.perform
+            
             log "#{process_id}: " + job_handler.message
 
             if job_handler.success?
@@ -67,16 +58,15 @@ module Soter
           end
       end #while
       log "#{process_id}: Harakiri"
-      logger.close
+      @log.close
     end #start
 
     def fork?
       Soter.config.fork
     end
 
-
-    def logger
-      @log
+    def logfile
+      Soter.config.logfile || 'log/soter.log'
     end
 
     def log(message)

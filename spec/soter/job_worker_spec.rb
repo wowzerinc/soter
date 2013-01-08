@@ -4,12 +4,8 @@ describe Soter::JobWorker do
 
   let(:handler) { FakeHandler } 
   let(:logger)  { FakeLogger.new }
-  let(:worker)  { described_class.new(handler, logger) }
-  let(:job)     { {'_id' => 1} }
-
-  it "reschedules unsuccessful requests" do
-    pending('define retry logic')
-  end
+  let(:worker)  { described_class.new }
+  let(:job)     { {'handler_class' => handler.to_s} }
 
   before :each do
     Soter.queue.stub(:lock_next).and_return(job,nil)
@@ -30,10 +26,14 @@ describe Soter::JobWorker do
   end
 
   it "should queue an error with a bad job" do
-    wrong_worker = described_class.new('wrong_handler', logger)
+    wrong_worker = described_class.new
     Soter.queue.should_receive(:error)
 
     wrong_worker.start
+  end
+
+  it "reschedules unsuccessful requests" do
+    pending('define retry logic')
   end
 
   it "rescues itself from a locked queue" do
