@@ -5,35 +5,49 @@ describe Soter::JobWorker do
   let(:handler) { FakeHandler } 
   let(:logger)  { FakeLogger.new }
   let(:worker)  { described_class.new }
-  let(:job)     { {'handler_class' => handler.to_s} }
+  let(:job) do
+    {
+      'handler_class' => handler.to_s,
+      'attempts'      => 0
+    }
+  end
 
   before :each do
-    Soter.queue.stub(:lock_next).and_return(job,nil)
+    Soter.queue.stub(:lock_next).and_return(job, nil)
   end
 
   it "performs expected job"  do
     handler.any_instance.should_receive(:perform)
+    
     Soter.queue.should_receive(:complete)
 
     worker.start
   end
 
-  it "should queue an error if job is unsuccessful"  do
+  it "should increment error count if job is unsuccessful"  do
     handler.any_instance.stub(:success?).and_return(false)
+    
     Soter.queue.should_receive(:error)
 
     worker.start
   end
 
-  it "should queue an error with a bad job" do
-    wrong_worker = described_class.new
-    Soter.queue.should_receive(:error)
+  it "should remove job from queue if wrong handler" do
+    Soter.queue.stub(:lock_next).and_return({'handler_class' => 'String'}, nil)
 
-    wrong_worker.start
+    handler.any_instance.should_receive(:perform).never
+    Soter.queue.should_receive(:complete)
+
+    worker.start
   end
 
-  it "reschedules unsuccessful requests" do
-    pending('define retry logic')
+  it "should remove job from queue if retry is disabled" do
+    Soter.queue.stub(:lock_next).and_return({'disable_rery' => true}, nil)
+    handler.any_instance.stub(:success?).and_return(false)
+
+    Soter.queue.should_receive(:complete)
+
+    worker.start
   end
 
   it "rescues itself from a locked queue" do

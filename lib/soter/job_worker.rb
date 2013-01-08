@@ -33,24 +33,26 @@ module Soter
 
         job.each {
           |key, value| log  "#{process_id}: {#{key} : #{value}}" }
-
+          
           begin
             job_handler = eval(job['handler_class']).new(job)
-            result      = job_handler.perform
             
+            job_handler.perform
             log "#{process_id}: " + job_handler.message
 
-            if job_handler.success?
-              @queue.complete(result, process_id)
+            if job_handler.success? || job['disable_retry']
+              @queue.complete(job, process_id)
               log "#{process_id}: Completed job #{job['_id']}"
             else
-              @queue.error(result, job_handler.message)
+              @queue.error(job, job_handler.message)
+              job['active_at'] = Time.now.utc + retry_offset(job['attempts']) 
+              
               log "#{process_id}: Failed job #{job['_id']}"
             end
 
             sleep(1) if fork?
           rescue Exception => e
-            @queue.error(job, e.message)
+            @queue.complete(job, e.message)
             log "#{process_id}: Failed job #{job['_id']}" +
               " with error #{e.message}"
             log "#{process_id}: Backtrace =>"
@@ -73,6 +75,9 @@ module Soter
       @log << message + "\n"
     end
 
+    def retry_offset(attempts)
+      (attempts ** 3) * (15 * 60)
+    end
 
   end
 end
