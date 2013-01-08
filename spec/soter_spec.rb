@@ -36,9 +36,9 @@ describe Soter do
   end
 
   it 'sets logger correctly' do
-    Soter.logger = logger
+    Soter.config.logger = logger
 
-    Soter.logger.should == logger
+    Soter.config.logger.should == logger
   end
 
   it "dispatches at most the specified number of workers" do

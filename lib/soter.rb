@@ -36,14 +36,6 @@ module Soter
     queue.remove(options)
   end
 
-  def self.logger
-    @logger
-  end
-
-  def self.logger=(logger)
-    @logger = logger
-  end
-
   private
 
   def self.database
