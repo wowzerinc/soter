@@ -63,10 +63,12 @@ Initialize configuration values
 * handler: class of the job to be performed
 * options: options to be passed to initializer
 
+
     Soter.enqueue(AJob, {id: 'true_job', status: true})
 
 ### Dequeue a job [ Soter.dequeue(options) ]
 
 * options: matching options of job or jobs to be removed from queue
+
 
     Soter.dequeue({handler_class: 'AJob', id: 'true_job'})
