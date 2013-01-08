@@ -2,7 +2,7 @@
 
 ruby + mongoid background jobs library
 
-## Configure
+## Install
 
 Install the gem
 
@@ -11,6 +11,8 @@ Install the gem
 Require it
 
     require 'soter'
+
+## Configure
 
 Initialize configuration values
    
