@@ -12,6 +12,10 @@ Require it
 
     require 'soter'
 
+You must require this version of mongo_queue to work
+  
+    gem 'mongo_queue', :git => 'https://github.com/andresf/mongo_queue.git'
+
 ## Configure
 
 Initialize configuration values
@@ -64,9 +68,10 @@ Initialize configuration values
       end
     end
 
-### Enqueque a job [ Soter.enqueue(handler, options)  ]
+### Enqueque a job [ Soter.enqueue(handler, retry=true, options)  ]
 
 * handler: class of the job to be performed
+* retry:   job retrial if fails
 * options: options to be passed to initializer
 
 Example:
