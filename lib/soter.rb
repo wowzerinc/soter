@@ -14,7 +14,12 @@ module Soter
 
   def self.enqueue(handler, job_options={}, queue_options={})
     options = {'options' => job_options, 'queue_options' => queue_options}
-    queue.insert(options.merge({'handler_class' =>  handler.to_s}))
+    
+    options.merge!({'handler_class' =>  handler.to_s})
+    if active_at = queue_options.delete(:active_at)
+      options.merge!({'active_at' => active_at}) 
+    end
+    queue.insert(options)
     dispatch_worker(queue_options)
   end
 

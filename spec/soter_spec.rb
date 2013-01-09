@@ -5,6 +5,7 @@ describe Soter do
   let(:handler) { FakeHandler }
   let(:options) { {option: 'an_option'} }
   let(:logger)  { FakeLogger.new }
+  let(:time)    { Time.now.utc }
   let(:job_options) do 
     {
       'options' => options,
@@ -41,6 +42,14 @@ describe Soter do
     Soter::JobWorker.any_instance.should_receive(:start)
 
     Soter.enqueue(handler, options, {disable_retry: true})
+  end
+  
+  it 'enqueues a job active at a certain time' do
+    expected_options = job_options.merge('active_at' => time)
+    Soter.queue.should_receive(:insert).with(expected_options)
+    Soter::JobWorker.any_instance.should_receive(:start)
+
+    Soter.enqueue(handler, options, {active_at: time})
   end
   
   it 'dequeues a job' do
