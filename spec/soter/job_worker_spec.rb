@@ -8,7 +8,8 @@ describe Soter::JobWorker do
   let(:job) do
     {
       'handler_class' => handler.to_s,
-      'attempts'      => 0
+      'attempts'      => 0,
+      'options'       => {}
     }
   end
 
@@ -42,12 +43,11 @@ describe Soter::JobWorker do
   end
 
   it "should remove job from queue if retry is disabled" do
-    Soter.queue.stub(:lock_next).and_return({'disable_rery' => true}, nil)
     handler.any_instance.stub(:success?).and_return(false)
-
+    
     Soter.queue.should_receive(:complete)
 
-    worker.start
+    worker.start(false)
   end
 
   it "rescues itself from a locked queue" do

@@ -3,13 +3,13 @@ module Soter
 
     require 'digest/md5'
 
-    def start
+    def start(retry_job=true)
       if fork?
         fork do
-          perform
+          perform(retry_job)
         end
       else
-        perform
+        perform(retry_job)
       end
     end
 
@@ -21,7 +21,7 @@ module Soter
       @queue.cleanup! # remove expired locks
     end
 
-    def perform
+    def perform(retry_job)
       process_id = Digest::MD5.
         hexdigest("#{Socket.gethostname}-#{Process.pid}-#{Thread.current}")
 
@@ -35,12 +35,13 @@ module Soter
           |key, value| log  "#{process_id}: {#{key} : #{value}}" }
           
           begin
-            job_handler = eval(job['handler_class']).new(job)
+            job_handler = eval(job['handler_class']).new(job['options'])
             
             job_handler.perform
+
             log "#{process_id}: " + job_handler.message
 
-            if job_handler.success? || job['disable_retry']
+            if job_handler.success? || !retry_job
               @queue.complete(job, process_id)
               log "#{process_id}: Completed job #{job['_id']}"
             else
