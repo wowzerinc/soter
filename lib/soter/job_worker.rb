@@ -3,30 +3,30 @@ module Soter
 
     require 'digest/md5'
 
-    def start(retry_job=true)
+    def start
       if fork?
         fork do
-          perform(retry_job)
+          perform
         end
       else
-        perform(retry_job)
+        perform
       end
     end
 
     def initialize
-      @queue       = Soter.queue
-      @log         = Soter.config.logger || File.open("#{logfile}", "a")
+      @queue         = Soter.queue
+      @log           = Soter.config.logger || File.open("#{logfile}", "a")
 
       @log.sync = true if @log.respond_to?(:sync=)
       @queue.cleanup! # remove expired locks
     end
 
-    def perform(retry_job)
+    def perform
       process_id = Digest::MD5.
         hexdigest("#{Socket.gethostname}-#{Process.pid}-#{Thread.current}")
 
       log "#{process_id}: Spawning"
-
+   
       while(job = @queue.lock_next(process_id))
         log "#{process_id}: Starting work on job #{job['_id']}"
         log "#{process_id}: Job info =>"
@@ -40,8 +40,8 @@ module Soter
             job_handler.perform
 
             log "#{process_id}: " + job_handler.message
-
-            if job_handler.success? || !retry_job
+           
+            if job_handler.success? || job['queue_options']['disable_retry']
               @queue.complete(job, process_id)
               log "#{process_id}: Completed job #{job['_id']}"
             else

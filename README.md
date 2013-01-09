@@ -68,11 +68,11 @@ Initialize configuration values
       end
     end
 
-### Enqueque a job [ Soter.enqueue(handler, retry=true, options)  ]
+### Enqueque a job [ Soter.enqueue(handler, options, queue_options)  ]
 
 * handler: class of the job to be performed
-* retry:   job retrial if fails
 * options: options to be passed to initializer
+* queue_options: [disable_retry, active_at]
 
 Example:
 

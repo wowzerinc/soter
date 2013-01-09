@@ -7,9 +7,19 @@ describe Soter::JobWorker do
   let(:worker)  { described_class.new }
   let(:job) do
     {
+      '_id'           => BSON::ObjectId.new,
       'handler_class' => handler.to_s,
       'attempts'      => 0,
-      'options'       => {}
+      'options'       => {},
+      'queue_options' => {}
+    }
+  end
+  let(:retry_false_job) do
+    {
+      'handler_class' => handler.to_s,
+      'attempts'      => 0,
+      'options'       => {},
+      'queue_options' => {'disable_retry' => true}
     }
   end
 
@@ -43,11 +53,12 @@ describe Soter::JobWorker do
   end
 
   it "should remove job from queue if retry is disabled" do
+    Soter.queue.stub(:lock_next).and_return(retry_false_job, nil)
     handler.any_instance.stub(:success?).and_return(false)
     
     Soter.queue.should_receive(:complete)
 
-    worker.start(false)
+    described_class.new.start
   end
 
   it "rescues itself from a locked queue" do

@@ -12,10 +12,10 @@ module Soter
     @config ||= Soter::Config.new
   end
 
-  def self.enqueue(handler, retry_job=true, options)
-    job_options = {'options' => options}
-    queue.insert(job_options.merge({'handler_class' =>  handler.to_s}))
-    dispatch_worker(retry_job)
+  def self.enqueue(handler, job_options={}, queue_options={})
+    options = {'options' => job_options, 'queue_options' => queue_options}
+    queue.insert(options.merge({'handler_class' =>  handler.to_s}))
+    dispatch_worker(queue_options)
   end
 
   def self.dequeue(options)
@@ -43,9 +43,9 @@ module Soter
     result || []
   end
 
-  def self.dispatch_worker(retry_job)
+  def self.dispatch_worker(queue_options)
     if workers.count < default_workers
-      JobWorker.new.start(retry_job)
+      JobWorker.new.start
     else
       queue.cleanup! #remove stuck locks
     end

@@ -6,7 +6,11 @@ describe Soter do
   let(:options) { {option: 'an_option'} }
   let(:logger)  { FakeLogger.new }
   let(:job_options) do 
-    job_options = { 'options' => options, 'handler_class' => 'FakeHandler' }
+    {
+      'options' => options,
+      'queue_options' => {},
+      'handler_class' => 'FakeHandler'
+    }
   end
 
   it 'configures correctly' do
@@ -26,16 +30,17 @@ describe Soter do
 
   it 'enqueues a job' do
     Soter.queue.should_receive(:insert).with(job_options)
-    Soter::JobWorker.any_instance.should_receive(:start).with(true)
+    Soter::JobWorker.any_instance.should_receive(:start)
 
     Soter.enqueue(handler, options)
   end
 
   it 'enqueues a job with retry disabled' do
+    job_options['queue_options'] = {disable_retry: true}
     Soter.queue.should_receive(:insert).with(job_options)
-    Soter::JobWorker.any_instance.should_receive(:start).with(false)
+    Soter::JobWorker.any_instance.should_receive(:start)
 
-    Soter.enqueue(handler, false,  options)
+    Soter.enqueue(handler, options, {disable_retry: true})
   end
   
   it 'dequeues a job' do
