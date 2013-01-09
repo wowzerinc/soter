@@ -24,8 +24,8 @@ module Soter
     dispatch_worker
   end
 
-  def self.dequeue(options)
-    queue.remove(options)
+  def self.dequeue(job_params)
+    queue.remove('job_params' => job_params)
   end
 
   private
