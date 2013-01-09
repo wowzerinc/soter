@@ -12,15 +12,16 @@ module Soter
     @config ||= Soter::Config.new
   end
 
-  def self.enqueue(handler, job_options={}, queue_options={})
-    options = {'options' => job_options, 'queue_options' => queue_options}
-    
+  def self.enqueue(handler, job_params={}, queue_options={})
+    options = {'job_params' => job_params, 'queue_options' => queue_options}
     options.merge!({'handler_class' =>  handler.to_s})
+    
     if active_at = queue_options.delete(:active_at)
       options.merge!({'active_at' => active_at}) 
     end
+
     queue.insert(options)
-    dispatch_worker(queue_options)
+    dispatch_worker
   end
 
   def self.dequeue(options)
@@ -48,7 +49,7 @@ module Soter
     result || []
   end
 
-  def self.dispatch_worker(queue_options)
+  def self.dispatch_worker
     if workers.count < default_workers
       JobWorker.new.start
     else

@@ -35,7 +35,7 @@ module Soter
           |key, value| log  "#{process_id}: {#{key} : #{value}}" }
           
           begin
-            job_handler = eval(job['handler_class']).new(job['options'])
+            job_handler = eval(job['handler_class']).new(job['job_params'])
             
             job_handler.perform
 

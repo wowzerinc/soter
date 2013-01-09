@@ -10,7 +10,7 @@ describe Soter::JobWorker do
       '_id'           => BSON::ObjectId.new,
       'handler_class' => handler.to_s,
       'attempts'      => 0,
-      'options'       => {},
+      'job_params'       => {},
       'queue_options' => {}
     }
   end
@@ -18,7 +18,7 @@ describe Soter::JobWorker do
     {
       'handler_class' => handler.to_s,
       'attempts'      => 0,
-      'options'       => {},
+      'job_params'       => {},
       'queue_options' => {'disable_retry' => true}
     }
   end

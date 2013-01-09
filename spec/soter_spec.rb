@@ -3,12 +3,12 @@ require 'spec_helper'
 describe Soter do
 
   let(:handler) { FakeHandler }
-  let(:options) { {option: 'an_option'} }
+  let(:job_params) { {option: 'an_option'} }
   let(:logger)  { FakeLogger.new }
   let(:time)    { Time.now.utc }
   let(:job_options) do 
     {
-      'options' => options,
+      'job_params' => job_params,
       'queue_options' => {},
       'handler_class' => 'FakeHandler'
     }
@@ -33,7 +33,7 @@ describe Soter do
     Soter.queue.should_receive(:insert).with(job_options)
     Soter::JobWorker.any_instance.should_receive(:start)
 
-    Soter.enqueue(handler, options)
+    Soter.enqueue(handler, job_params)
   end
 
   it 'enqueues a job with retry disabled' do
@@ -41,7 +41,7 @@ describe Soter do
     Soter.queue.should_receive(:insert).with(job_options)
     Soter::JobWorker.any_instance.should_receive(:start)
 
-    Soter.enqueue(handler, options, {disable_retry: true})
+    Soter.enqueue(handler, job_params, {disable_retry: true})
   end
   
   it 'enqueues a job active at a certain time' do
@@ -49,13 +49,13 @@ describe Soter do
     Soter.queue.should_receive(:insert).with(expected_options)
     Soter::JobWorker.any_instance.should_receive(:start)
 
-    Soter.enqueue(handler, options, {active_at: time})
+    Soter.enqueue(handler, job_params, {active_at: time})
   end
   
   it 'dequeues a job' do
-    Soter.queue.should_receive(:remove).with(options)
+    Soter.queue.should_receive(:remove).with(job_params)
     
-    Soter.dequeue(options)
+    Soter.dequeue(job_params)
   end
 
   it 'sets logger correctly' do
@@ -68,7 +68,7 @@ describe Soter do
     Soter.queue.should_receive(:insert).with(job_options)
     Soter.queue.should_receive(:cleanup!).once
     
-    Soter.enqueue(handler, options)
+    Soter.enqueue(handler, job_params)
   end
 
   context "Forking" do
