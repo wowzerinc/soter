@@ -10,7 +10,8 @@ describe Soter do
     {
       'job_params' => job_params,
       'queue_options' => {},
-      'handler_class' => 'FakeHandler'
+      'handler_class' => 'FakeHandler',
+      'active_at'     => nil
     }
   end
 
