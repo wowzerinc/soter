@@ -8,9 +8,11 @@ describe Soter do
   let(:time)    { Time.now.utc }
   let(:job) do 
     {
-      'job_params' => job_params,
+      'job' => {
+        'params' => job_params,
+        'class'  => 'FakeHandler'
+      },
       'queue_options' => {},
-      'handler_class' => 'FakeHandler',
       'active_at'     => nil
     }
   end
@@ -45,10 +47,10 @@ describe Soter do
 
     Soter.enqueue(handler, job_params, {active_at: time})
   end
-  
+
   it 'dequeues a job' do
     Soter.queue.should_receive(:remove).with('job_params' => job_params)
-    
+
     Soter.dequeue(job_params)
   end
 
@@ -61,7 +63,7 @@ describe Soter do
   it "dispatches at most the specified number of workers" do
     Soter.queue.should_receive(:insert).with(job)
     Soter.queue.should_receive(:cleanup!).once
-    
+
     Soter.enqueue(handler, job_params)
   end
 

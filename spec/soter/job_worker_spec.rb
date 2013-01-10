@@ -8,9 +8,11 @@ describe Soter::JobWorker do
   let(:job) do
     {
       '_id'           => BSON::ObjectId.new,
-      'handler_class' => handler.to_s,
       'attempts'      => 0,
-      'job_params'       => {},
+      'job'           => {
+        'class' => handler.to_s,
+        'params' => {}
+      },
       'queue_options' => {}
     }
   end

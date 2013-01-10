@@ -22,9 +22,11 @@ module Soter
 
   def self.enqueue(handler, job_params={}, queue_options={})
     job = {
-      'job_params' => job_params,
+      'job' => {
+        'params' => job_params,
+        'class' => handler.to_s
+      },
       'queue_options' => queue_options,
-      'handler_class' => handler.to_s,
       'active_at' => queue_options.delete(:active_at)
     }
 
