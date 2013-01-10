@@ -41,7 +41,7 @@ module Soter
 
             log "#{process_id}: " + job_handler.message
            
-            if job_handler.success? || job['queue_options']['disable_retry']
+            if job_handler.success?
               @queue.complete(job, process_id)
               log "#{process_id}: Completed job #{job['_id']}"
             else

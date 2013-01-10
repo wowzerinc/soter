@@ -75,7 +75,7 @@ Initialize configuration values
 
 * handler: class of the job to be performed
 * options: options to be passed to initializer
-* queue_options: [disable_retry, active_at]
+* queue_options: [active_at]
 
 Example:
 

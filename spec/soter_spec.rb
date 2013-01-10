@@ -37,14 +37,6 @@ describe Soter do
     Soter.enqueue(handler, job_params)
   end
 
-  it 'enqueues a job with retry disabled' do
-    job_options['queue_options'] = {disable_retry: true}
-    Soter.queue.should_receive(:insert).with(job_options)
-    Soter::JobWorker.any_instance.should_receive(:start)
-
-    Soter.enqueue(handler, job_params, {disable_retry: true})
-  end
-  
   it 'enqueues a job active at a certain time' do
     expected_options = job_options.merge('active_at' => time)
     Soter.queue.should_receive(:insert).with(expected_options)
