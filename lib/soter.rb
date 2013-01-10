@@ -50,14 +50,14 @@ module Soter
   end
 
   def self.dispatch_worker
-    if workers.count < default_workers
+    if workers.count < max_workers
       JobWorker.new.start
     else
       queue.cleanup! #remove stuck locks
     end
   end
 
-  def self.default_workers
+  def self.max_workers
     Soter.config.workers || 5
   end
 
