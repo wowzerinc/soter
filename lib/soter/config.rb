@@ -1,6 +1,6 @@
 module Soter
   class Config < Struct.new(:fork, :logfile, :logger, :host, :port, :db,
-                            :workers)
+                            :workers, :attempts)
 
     def queue_settings
       { 
@@ -9,7 +9,7 @@ module Soter
         database:   self.db, 
         collection: "mongo_queue",
         timeout:    300,
-        attempts:   3
+        attempts:   ( self.attempts || 3 )
       }
     end
 

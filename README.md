@@ -42,8 +42,11 @@ Initialize configuration values
     # File to log if logger is not defined
     Soter.config.logfile = 'log/dev.log'
 
-    # Max number of workers (defaul is 5)
+    # Max number of workers (default is 5)
     Soter.config.workers = 4
+
+    # Number of attempts (default is 3)
+    Soter.config.attempts
 
 ## Usage
 

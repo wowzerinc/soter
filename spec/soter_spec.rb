@@ -18,6 +18,7 @@ describe Soter do
     Soter.config.host = 'host'
     Soter.config.port = 'port'
     Soter.config.db   = 'test'
+    Soter.config.attempts = 3
 
     Soter.config.queue_settings.should == {
       host:       'host',
