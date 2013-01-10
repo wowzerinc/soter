@@ -13,14 +13,14 @@ module Soter
   end
 
   def self.enqueue(handler, job_params={}, queue_options={})
-    options = {
+    job = {
       'job_params' => job_params,
       'queue_options' => queue_options,
       'handler_class' => handler.to_s,
       'active_at' => queue_options.delete(:active_at)
     }
 
-    queue.insert(options)
+    queue.insert(job)
     dispatch_worker
   end
 

@@ -6,7 +6,7 @@ describe Soter do
   let(:job_params) { {option: 'an_option'} }
   let(:logger)  { FakeLogger.new }
   let(:time)    { Time.now.utc }
-  let(:job_options) do 
+  let(:expected_options) do 
     {
       'job_params' => job_params,
       'queue_options' => {},
@@ -32,14 +32,14 @@ describe Soter do
   end
 
   it 'enqueues a job' do
-    Soter.queue.should_receive(:insert).with(job_options)
+    Soter.queue.should_receive(:insert).with(expected_options)
     Soter::JobWorker.any_instance.should_receive(:start)
 
     Soter.enqueue(handler, job_params)
   end
 
   it 'enqueues a job active at a certain time' do
-    expected_options = job_options.merge('active_at' => time)
+    expected_options['active_at'] = time
     Soter.queue.should_receive(:insert).with(expected_options)
     Soter::JobWorker.any_instance.should_receive(:start)
 
@@ -59,7 +59,7 @@ describe Soter do
   end
 
   it "dispatches at most the specified number of workers" do
-    Soter.queue.should_receive(:insert).with(job_options)
+    Soter.queue.should_receive(:insert).with(expected_options)
     Soter.queue.should_receive(:cleanup!).once
     
     Soter.enqueue(handler, job_params)
