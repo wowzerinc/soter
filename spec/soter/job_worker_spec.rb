@@ -27,6 +27,15 @@ describe Soter::JobWorker do
     worker.start
   end
 
+  it "performs correctly in namespaced handlers" do
+    job['handler_class'] = Handlers::Fake.to_s
+    
+    Soter.queue.stub(:complete)
+    Handlers::Fake.any_instance.should_receive(:perform)
+
+    worker.start
+  end
+  
   it "should increment error count if job is unsuccessful"  do
     handler.any_instance.stub(:success?).and_return(false)
     

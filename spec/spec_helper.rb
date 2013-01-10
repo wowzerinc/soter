@@ -7,10 +7,7 @@ class FakeLogger
   def reset; @log = ''; end
 end
 
-class FakeHandler
-  def perform
-  end
-
+FakeHandler = Struct.new(:perform) do
   def message
     'message'
   end
@@ -18,4 +15,8 @@ class FakeHandler
   def success?
     true
   end
+end
+
+module Handlers
+  Fake = FakeHandler
 end

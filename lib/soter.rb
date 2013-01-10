@@ -4,6 +4,14 @@ require_relative 'soter/job_worker'
 require 'mongo'
 require 'mongo_queue'
 
+class Module
+  def recursive_const_get(name)
+    name.to_s.split("::").inject(self) do |b, c|
+      b.const_get(c)
+    end
+  end
+end
+
 module Soter
 
   require 'mongo_queue'
