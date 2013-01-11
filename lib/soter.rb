@@ -5,11 +5,6 @@ require 'mongo'
 require 'mongo_queue'
 
 class Module
-  def recursive_const_get(name)
-    name.to_s.split("::").inject(self) do |b, c|
-      b.const_get(c)
-    end
-  end
 end
 
 module Soter
@@ -69,6 +64,12 @@ module Soter
 
   def self.max_workers
     Soter.config.workers || 5
+  end
+
+  def self.recursive_const_get(name)
+    name.to_s.split("::").inject(self) do |b, c|
+      b.const_get(c)
+    end
   end
 
 end

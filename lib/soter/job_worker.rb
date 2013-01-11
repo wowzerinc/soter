@@ -35,7 +35,7 @@ module Soter
           |key, value| log  "#{process_id}: {#{key} : #{value}}" }
           
           begin
-            handler_class = Module.recursive_const_get(job['job']['class'])
+            handler_class = Soter.recursive_const_get(job['job']['class'])
             job_handler   = handler_class.new(job['job']['params'])
             
             job_handler.perform
