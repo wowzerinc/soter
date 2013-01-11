@@ -26,29 +26,29 @@ module Soter
         hexdigest("#{Socket.gethostname}-#{Process.pid}-#{Thread.current}")
 
       log "#{process_id}: Spawning"
-   
+
       while(job = @queue.lock_next(process_id))
         log "#{process_id}: Starting work on job #{job['_id']}"
         log "#{process_id}: Job info =>"
 
         job.each {
           |key, value| log  "#{process_id}: {#{key} : #{value}}" }
-          
+
           begin
             handler_class = Soter.recursive_const_get(job['job']['class'])
             job_handler   = handler_class.new(job['job']['params'])
-            
+
             job_handler.perform
 
             log "#{process_id}: " + job_handler.message
-           
+
             if job_handler.success?
               @queue.complete(job, process_id)
               log "#{process_id}: Completed job #{job['_id']}"
             else
               @queue.error(job, job_handler.message)
-              job['active_at'] = Time.now.utc + retry_offset(job['attempts']) 
-              
+              job['active_at'] = Time.now.utc + Soter.retry_offset(job['attempts'])
+
               log "#{process_id}: Failed job #{job['_id']}"
             end
 
@@ -65,6 +65,8 @@ module Soter
       @log.close
     end #start
 
+    private
+
     def fork?
       Soter.config.fork
     end
@@ -75,10 +77,6 @@ module Soter
 
     def log(message)
       @log << message + "\n"
-    end
-
-    def retry_offset(attempts)
-      (attempts ** 3) * (15 * 60)
     end
 
   end

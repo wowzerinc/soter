@@ -35,6 +35,10 @@ module Soter
 
   private
 
+  def self.retry_offset(attempts)
+    ( (attempts-1) ** 3) * (15 * 60)  + 120
+  end
+
   def self.database
     @database ||= Mongo::Connection.new
   end
