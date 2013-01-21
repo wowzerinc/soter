@@ -8,6 +8,7 @@ Gem::Specification.new do |s|
   s.files       = Dir['lib/soter/*.rb'] + %w(lib/soter.rb) 
 
   s.add_development_dependency('rspec')
+  s.add_development_dependency('rake')
   s.add_runtime_dependency('mongo')
   s.add_runtime_dependency('bson_ext')
 end
