@@ -71,7 +71,8 @@ describe Soter do
     expected_values = [ 2, 17, 122, 407, 962]
 
     expected_values.each_with_index do |value, index|
-      Soter.send(:retry_offset, index+1).should == value * 60
+      retries = index+1
+      Soter.send(:retry_offset, retries).should == value * 60
     end
   end
 
