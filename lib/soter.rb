@@ -39,7 +39,7 @@ module Soter
   # 2.minutes, 17.minutes, 2.hours, 6.hours,
   # 16.hours, 31.hours, 54.hours, 85.hours
   def self.retry_offset(attempts)
-    ( (attempts-1) ** 3) * (15 * 60)  + 120
+    ( (attempts) ** 3) * (15 * 60)  + 120
   end
 
   def self.database
