@@ -46,8 +46,8 @@ module Soter
               @queue.complete(job, process_id)
               log "#{process_id}: Completed job #{job['_id']}"
             else
-              @queue.error(job, job_handler.message)
-              job['active_at'] = Time.now.utc + Soter.retry_offset(job['attempts'])
+             job['active_at'] = Time.now.utc + Soter.retry_offset(job['attempts'])
+             @queue.error(job, job_handler.message)
 
               log "#{process_id}: Failed job #{job['_id']}"
             end
