@@ -17,7 +17,7 @@ describe Soter do
     }
   end
 
-  it 'configures correctly' do
+  it 'configures one host correctly' do
     Soter.config.host = 'host'
     Soter.config.port = 'port'
     Soter.config.db   = 'test'
@@ -25,6 +25,23 @@ describe Soter do
 
     Soter.config.queue_settings.should == {
       host:       'host',
+      port:       'port',
+      database:   'test',
+      collection: 'mongo_queue',
+      timeout:    300,
+      attempts:   3
+    }
+  end
+
+  it 'configures multiple hosts correctly' do
+    Soter.config.host  = nil
+    Soter.config.hosts = [['127.0.0.1', 27017], ['localhost', 27017]]
+    Soter.config.port  = 'port'
+    Soter.config.db    = 'test'
+    Soter.config.attempts = 3
+
+    Soter.config.queue_settings.should == {
+      hosts:      [['127.0.0.1', 27017], ['localhost', 27017]],
       port:       'port',
       database:   'test',
       collection: 'mongo_queue',
