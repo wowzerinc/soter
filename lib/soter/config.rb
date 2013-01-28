@@ -1,16 +1,17 @@
 module Soter
   class Config < Struct.new(:fork, :logfile, :logger, :host, :port, :db,
-                            :workers, :attempts)
+                            :workers, :attempts, :hosts)
 
     def queue_settings
-      { 
-        host:       self.host,   
-        port:       self.port,
-        database:   self.db, 
-        collection: "mongo_queue",
+      host_settings = host ? {host: host} : {hosts: hosts}
+
+      host_settings.merge({
+        port:       port,
+        database:   db,
+        collection: "soter_queue",
         timeout:    300,
-        attempts:   ( self.attempts || 3 )
-      }
+        attempts:   (attempts || 3)
+      })
     end
 
   end
