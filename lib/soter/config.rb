@@ -8,7 +8,7 @@ module Soter
       host_settings.merge({
         port:       port,
         database:   db,
-        collection: "mongo_queue",
+        collection: "soter_queue",
         timeout:    300,
         attempts:   (attempts || 3)
       })

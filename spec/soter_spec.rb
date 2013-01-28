@@ -27,7 +27,7 @@ describe Soter do
       host:       'host',
       port:       'port',
       database:   'test',
-      collection: 'mongo_queue',
+      collection: 'soter_queue',
       timeout:    300,
       attempts:   3
     }
@@ -44,7 +44,7 @@ describe Soter do
       hosts:      [['127.0.0.1', 27017], ['localhost', 27017]],
       port:       'port',
       database:   'test',
-      collection: 'mongo_queue',
+      collection: 'soter_queue',
       timeout:    300,
       attempts:   3
     }
