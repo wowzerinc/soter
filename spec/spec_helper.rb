@@ -20,3 +20,6 @@ end
 module Handlers
   Fake = FakeHandler
 end
+
+Soter.config.hosts = 'localhost'
+Soter.config.port = 27017

@@ -4,9 +4,6 @@ require_relative 'soter/job_worker'
 require 'mongo'
 require 'mongo_queue'
 
-class Module
-end
-
 module Soter
 
   require 'mongo_queue'
@@ -43,7 +40,11 @@ module Soter
   end
 
   def self.database
-    @database ||= Mongo::Connection.new
+    if Soter.config.host
+      @database ||= Mongo::Connection.new(Soter.config.host, Soter.config.port)
+    else
+      @database ||= Mongo::ReplSetConnection.new(Soter.config.hosts.first)
+    end
   end
 
   def self.queue
