@@ -6,8 +6,6 @@ require 'mongo_queue'
 
 module Soter
 
-  require 'mongo_queue'
-
   def self.config
     @config ||= Soter::Config.new
   end
@@ -43,7 +41,7 @@ module Soter
     if Soter.config.host
       @database ||= Mongo::Connection.new(Soter.config.host, Soter.config.port)
     else
-      @database ||= Mongo::MongoReplicaSetClient(Soter.config.hosts)
+      @database ||= Mongo::MongoReplicaSetClient.new(Soter.config.hosts)
     end
   end
 

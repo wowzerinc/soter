@@ -31,21 +31,31 @@ describe Soter do
       timeout:    300,
       attempts:   3
     }
+
+    expect do
+      Soter.instance_variable_set(:@database, nil)
+      Soter.database
+    end.to raise_error 'Failed to connect to a master node at host:port'
   end
 
   it 'configures multiple hosts correctly' do
     Soter.config.host  = nil
-    Soter.config.hosts = ['127.0.0.1:27017', 'localhost:27017']
+    Soter.config.hosts = ['localhost:27017']
     Soter.config.db    = 'test'
     Soter.config.attempts = 3
 
     Soter.config.queue_settings.should == {
-      hosts:      ['127.0.0.1:27017', 'localhost:27017'],
+      hosts:      ['localhost:27017'],
       database:   'test',
       collection: 'soter_queue',
       timeout:    300,
       attempts:   3
     }
+
+    expect do
+      Soter.instance_variable_set(:@database, nil)
+      Soter.database
+    end.to raise_error 'Cannot connect to a replica set using seeds localhost:27017'
   end
 
   it 'enqueues and starts a job' do
