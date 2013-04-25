@@ -57,8 +57,8 @@ describe Soter::JobWorker do
 
   it "rescues itself from a locked queue" do
     pending('what does this means?')
-    old_timeout = QUEUE_SETTINGS[:timeout]
-    QUEUE_SETTINGS[:timeout] = 0
+    old_timeout = Soter.config.timeout
+    Soter.config.timeout = QUEUE_SETTINGS[:timeout] = 0
     JobDispatcher.instance_variable_set("@queue", nil)
 
     QUEUE_SETTINGS[:workers].times do 
