@@ -9,6 +9,6 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency('rspec')
   s.add_development_dependency('rake')
-  s.add_runtime_dependency('mongo')
+  s.add_runtime_dependency('mongo', '~> 1.8')
   s.add_runtime_dependency('bson_ext')
 end
