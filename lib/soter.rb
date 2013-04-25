@@ -39,7 +39,7 @@ module Soter
 
   def self.database
     if Soter.config.host
-      @database ||= Mongo::Connection.new(Soter.config.host, Soter.config.port)
+      @database ||= Mongo::MongoClient.new(Soter.config.host, Soter.config.port)
     else
       @database ||= Mongo::MongoReplicaSetClient.new(Soter.config.hosts)
     end
