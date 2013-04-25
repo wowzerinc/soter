@@ -14,8 +14,8 @@ module Soter
     end
 
     def initialize
-      @queue         = Soter.queue
-      @log           = Soter.config.logger || File.open("#{logfile}", "a")
+      @queue = Soter.queue
+      @log   = Soter.config.logger || logfile
 
       @log.sync = true if @log.respond_to?(:sync=)
       @queue.cleanup! # remove expired locks
@@ -73,7 +73,10 @@ module Soter
     end
 
     def logfile
-      Soter.config.logfile || 'log/soter.log'
+      filename = Soter.config.logfile || 'log/soter.log'
+      FileUtils.mkdir_p(File.dirname(filename))
+
+      File.open(filename, "a")
     end
 
     def log(message)
