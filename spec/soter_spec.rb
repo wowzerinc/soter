@@ -5,8 +5,8 @@ describe Soter do
   let(:handler) { FakeHandler }
   let(:job_params) { {option: 'an_option'} }
   let(:logger)  { FakeLogger.new }
-  let(:time)    { Time.now.utc }
-  let(:job) do 
+  let(:current_time) { Time.now.utc }
+  let(:job) do
     {
       'job' => {
         'params' => job_params,
@@ -17,52 +17,79 @@ describe Soter do
     }
   end
 
-  it 'configures one host correctly' do
-    Soter.config.host = 'host'
-    Soter.config.port = 'port'
-    Soter.config.db   = 'test'
-    Soter.config.attempts = 3
+  context "host configuration" do
 
-    Soter.config.queue_settings.should == {
-      host:       'host',
-      port:       'port',
-      database:   'test',
-      collection: 'soter_queue',
-      timeout:    300,
-      attempts:   3
-    }
+    before(:each) { @database = Soter.instance_variable_get(:@database) }
+    after(:each)  { Soter.instance_variable_set(:@database, @database)  }
+
+    it 'configures one host correctly' do
+      Soter.config.host = 'host'
+      Soter.config.port = 'port'
+      Soter.config.db   = 'test'
+      Soter.config.attempts = 3
+
+      Soter.config.queue_settings.should == {
+        host:       'host',
+        port:       'port',
+        database:   'test',
+        collection: 'soter_queue',
+        timeout:    300,
+        attempts:   3
+      }
+
+      expect do
+        Soter.instance_variable_set(:@database, nil)
+        Soter.database
+      end.to raise_error 'Failed to connect to a master node at host:port'
+    end
+
+    it 'configures multiple hosts correctly' do
+      Soter.config.host  = nil
+      Soter.config.hosts = ['localhost:27017']
+      Soter.config.db    = 'test'
+      Soter.config.attempts = 3
+
+      Soter.config.queue_settings.should == {
+        hosts:      ['localhost:27017'],
+        database:   'test',
+        collection: 'soter_queue',
+        timeout:    300,
+        attempts:   3
+      }
+
+      expect do
+        Soter.instance_variable_set(:@database, nil)
+        Soter.database
+      end.to raise_error 'Cannot connect to a replica set using seeds localhost:27017'
+    end
+
   end
 
-  it 'configures multiple hosts correctly' do
-    Soter.config.host  = nil
-    Soter.config.hosts = [['127.0.0.1', 27017], ['localhost', 27017]]
-    Soter.config.port  = 'port'
-    Soter.config.db    = 'test'
-    Soter.config.attempts = 3
-
-    Soter.config.queue_settings.should == {
-      hosts:      [['127.0.0.1', 27017], ['localhost', 27017]],
-      port:       'port',
-      database:   'test',
-      collection: 'soter_queue',
-      timeout:    300,
-      attempts:   3
-    }
-  end
-
-  it 'enqueues a job' do
+  it 'enqueues and starts a job' do
     Soter.queue.should_receive(:insert).with(job)
     Soter::JobWorker.any_instance.should_receive(:start)
 
     Soter.enqueue(handler, job_params)
   end
 
-  it 'enqueues a job active at a certain time' do
-    job['active_at'] = time
-    Soter.queue.should_receive(:insert).with(job)
-    Soter::JobWorker.any_instance.should_receive(:start)
+  context 'with option active_at' do
 
-    Soter.enqueue(handler, job_params, {active_at: time})
+    it 'starts the job if the time has passed' do
+      pending("This isn't testing what it claims")
+      job['active_at'] = (active_at = current_time - 100)
+      Soter.queue.should_receive(:insert).with(job)
+
+      Soter.enqueue(handler, job_params, {active_at: active_at})
+    end
+
+    it 'does not start the job if the time has not passed' do
+      pending("This isn't testing what it claims")
+      job['active_at'] = (active_at = current_time + 100)
+      Soter.queue.should_receive(:insert).with(job)
+
+      Soter.enqueue(handler, job_params, {active_at: active_at})
+    end
+
   end
 
   it 'dequeues a job' do
@@ -78,6 +105,7 @@ describe Soter do
   end
 
   it "dispatches at most the specified number of workers" do
+    pending("This isn't testing what it claims")
     Soter.queue.should_receive(:insert).with(job)
     Soter.queue.should_receive(:cleanup!).once
 
