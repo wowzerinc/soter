@@ -6,8 +6,6 @@ require 'mongo_queue'
 
 module Soter
 
-  require 'mongo_queue'
-
   def self.config
     @config ||= Soter::Config.new
   end
@@ -45,14 +43,14 @@ module Soter
   # 2.minutes, 17.minutes, 2.hours, 6.hours,
   # 16.hours, 31.hours, 54.hours, 85.hours
   def self.retry_offset(retries)
-    ( (retries-1) ** 3) * (15 * 60)  + 120
+    ( (retries-1) ** 3 ) * (15 * 60) + 120
   end
 
   def self.database
     if Soter.config.host
-      @database ||= Mongo::Connection.new(Soter.config.host, Soter.config.port)
+      @database ||= Mongo::MongoClient.new(Soter.config.host, Soter.config.port)
     else
-      @database ||= Mongo::ReplSetConnection.new(Soter.config.hosts.first)
+      @database ||= Mongo::MongoReplicaSetClient.new(Soter.config.hosts)
     end
   end
 
