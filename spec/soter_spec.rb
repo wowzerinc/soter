@@ -6,7 +6,7 @@ describe Soter do
   let(:job_params) { {option: 'an_option'} }
   let(:logger)  { FakeLogger.new }
   let(:current_time) { Time.now.utc }
-  let(:job) do 
+  let(:job) do
     {
       'job' => {
         'params' => job_params,
@@ -17,45 +17,52 @@ describe Soter do
     }
   end
 
-  it 'configures one host correctly' do
-    Soter.config.host = 'host'
-    Soter.config.port = 'port'
-    Soter.config.db   = 'test'
-    Soter.config.attempts = 3
+  context "host configuration" do
 
-    Soter.config.queue_settings.should == {
-      host:       'host',
-      port:       'port',
-      database:   'test',
-      collection: 'soter_queue',
-      timeout:    300,
-      attempts:   3
-    }
+    before(:each) { @database = Soter.instance_variable_get(:@database) }
+    after(:each)  { Soter.instance_variable_set(:@database, @database)  }
 
-    expect do
-      Soter.instance_variable_set(:@database, nil)
-      Soter.database
-    end.to raise_error 'Failed to connect to a master node at host:port'
-  end
+    it 'configures one host correctly' do
+      Soter.config.host = 'host'
+      Soter.config.port = 'port'
+      Soter.config.db   = 'test'
+      Soter.config.attempts = 3
 
-  it 'configures multiple hosts correctly' do
-    Soter.config.host  = nil
-    Soter.config.hosts = ['localhost:27017']
-    Soter.config.db    = 'test'
-    Soter.config.attempts = 3
+      Soter.config.queue_settings.should == {
+        host:       'host',
+        port:       'port',
+        database:   'test',
+        collection: 'soter_queue',
+        timeout:    300,
+        attempts:   3
+      }
 
-    Soter.config.queue_settings.should == {
-      hosts:      ['localhost:27017'],
-      database:   'test',
-      collection: 'soter_queue',
-      timeout:    300,
-      attempts:   3
-    }
+      expect do
+        Soter.instance_variable_set(:@database, nil)
+        Soter.database
+      end.to raise_error 'Failed to connect to a master node at host:port'
+    end
 
-    expect do
-      Soter.instance_variable_set(:@database, nil)
-      Soter.database
-    end.to raise_error 'Cannot connect to a replica set using seeds localhost:27017'
+    it 'configures multiple hosts correctly' do
+      Soter.config.host  = nil
+      Soter.config.hosts = ['localhost:27017']
+      Soter.config.db    = 'test'
+      Soter.config.attempts = 3
+
+      Soter.config.queue_settings.should == {
+        hosts:      ['localhost:27017'],
+        database:   'test',
+        collection: 'soter_queue',
+        timeout:    300,
+        attempts:   3
+      }
+
+      expect do
+        Soter.instance_variable_set(:@database, nil)
+        Soter.database
+      end.to raise_error 'Cannot connect to a replica set using seeds localhost:27017'
+    end
+
   end
 
   it 'enqueues and starts a job' do
