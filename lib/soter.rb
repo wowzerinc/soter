@@ -36,7 +36,7 @@ module Soter
     @database = nil
     @queue    = nil
 
-    queue
+    !!queue
   end
 
   private
