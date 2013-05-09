@@ -103,6 +103,13 @@ describe Soter do
     Soter.queue.should_not    == queue
   end
 
+  it "resets connections only if there's something to reset" do
+    Soter.module_eval('@queue    = nil')
+    Soter.module_eval('@database = nil')
+
+    Soter.reset_database_connections
+  end
+
   context "Forking" do
 
     before :each do
