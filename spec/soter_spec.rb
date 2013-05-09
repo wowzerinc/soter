@@ -104,12 +104,12 @@ describe Soter do
   end
 
   it "resets connections only if there's something to reset" do
-    Soter.module_eval('@queue    = nil')
-    Soter.module_eval('@database = nil')
+    Soter.instance_variable_set(:@queue, nil)
+    Soter.instance_variable_set(:@database, nil)
 
-    expect{
+    expect do
       Soter.reset_database_connections
-    }.to_not raise_error
+    end.to_not raise_error
   end
 
   context "Forking" do
