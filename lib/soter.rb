@@ -29,8 +29,8 @@ module Soter
   end
 
   def self.reset_database_connections
-    @queue.connection.close
-    @database.close
+    @queue.connection.close if @queue
+    @database.close         if @database
     @database = nil
     @queue    = nil
 
