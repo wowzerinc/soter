@@ -28,6 +28,15 @@ module Soter
     queue.remove('job_params' => job_params)
   end
 
+  def self.reset_database_connections
+    @queue.connection.close
+    @database.close
+    @database = nil
+    @queue    = nil
+
+    !!queue
+  end
+
   private
 
   # First 8 retry values in minutes are: 

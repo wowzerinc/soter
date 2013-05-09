@@ -121,6 +121,16 @@ describe Soter do
     end
   end
 
+  it "resets the mongo connections" do
+    queue    = Soter.queue
+    database = Soter.database
+
+    Soter.reset_database_connections
+
+    Soter.database.should_not == database
+    Soter.queue.should_not    == queue
+  end
+
   context "Forking" do
 
     before :each do
