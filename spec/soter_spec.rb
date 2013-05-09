@@ -107,7 +107,9 @@ describe Soter do
     Soter.module_eval('@queue    = nil')
     Soter.module_eval('@database = nil')
 
-    Soter.reset_database_connections
+    expect{
+      Soter.reset_database_connections
+    }.to_not raise_error
   end
 
   context "Forking" do
