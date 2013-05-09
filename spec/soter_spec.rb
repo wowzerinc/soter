@@ -131,6 +131,15 @@ describe Soter do
     Soter.queue.should_not    == queue
   end
 
+  it "resets connections only if there's something to reset" do
+    Soter.instance_variable_set(:@queue, nil)
+    Soter.instance_variable_set(:@database, nil)
+
+    expect do
+      Soter.reset_database_connections
+    end.to_not raise_error
+  end
+
   context "Forking" do
 
     before :each do
