@@ -1,7 +1,7 @@
 require_relative 'soter/config'
 require_relative 'soter/job_worker'
 
-require 'mongo'
+require 'moped'
 require 'mongo_queue'
 
 module Soter
@@ -38,15 +38,17 @@ module Soter
   end
 
   def self.database
-    if Soter.config.host
-      @database ||= Mongo::MongoClient.new(Soter.config.host, Soter.config.port)
-    else
-      @database ||= Mongo::MongoReplicaSetClient.new(Soter.config.hosts)
-    end
+    hosts = if Soter.config.host
+              [Soter.config.host + ':' + Soter.config.port.to_s]
+            else
+              Soter.config.hosts
+            end
+
+    @database ||= Moped::Session.new(hosts)
   end
 
   def self.queue
-    @queue ||= Mongo::Queue.new(database, Soter.config.queue_settings)
+    @queue ||= Mongo::Queue.new(database, config.queue_settings)
   end
 
   def self.workers

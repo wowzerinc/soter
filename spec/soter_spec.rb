@@ -23,9 +23,9 @@ describe Soter do
     after(:each)  { Soter.instance_variable_set(:@database, @database)  }
 
     it 'configures one host correctly' do
-      Soter.config.host = 'host'
-      Soter.config.port = 'port'
-      Soter.config.db   = 'test'
+      Soter.config.host     = 'host'
+      Soter.config.port     = 'port'
+      Soter.config.database = 'test'
       Soter.config.attempts = 3
 
       Soter.config.queue_settings.should == {
@@ -36,17 +36,12 @@ describe Soter do
         timeout:    300,
         attempts:   3
       }
-
-      expect do
-        Soter.instance_variable_set(:@database, nil)
-        Soter.database
-      end.to raise_error 'Failed to connect to a master node at host:port'
     end
 
     it 'configures multiple hosts correctly' do
-      Soter.config.host  = nil
-      Soter.config.hosts = ['localhost:27017']
-      Soter.config.db    = 'test'
+      Soter.config.host     = nil
+      Soter.config.hosts    = ['localhost:27017']
+      Soter.config.database = 'test'
       Soter.config.attempts = 3
 
       Soter.config.queue_settings.should == {
@@ -56,11 +51,6 @@ describe Soter do
         timeout:    300,
         attempts:   3
       }
-
-      expect do
-        Soter.instance_variable_set(:@database, nil)
-        Soter.database
-      end.to raise_error 'Cannot connect to a replica set using seeds localhost:27017'
     end
 
   end
