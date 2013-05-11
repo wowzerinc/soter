@@ -29,8 +29,7 @@ module Soter
   end
 
   def self.reset_database_connections
-    @queue.connection.close if @queue
-    @database.close         if @database
+    @database.logout if @database
     @database = nil
     @queue    = nil
 
@@ -53,7 +52,7 @@ module Soter
               Soter.config.hosts
             end
 
-    @database ||= Moped::Session.new(hosts)
+    @database ||= Moped::Session.new(hosts, safe: true, consistency: :strong)
   end
 
   def self.queue
