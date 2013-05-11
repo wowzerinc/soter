@@ -29,7 +29,7 @@ module Soter
   end
 
   def self.reset_database_connections
-    @database.logout if @database
+    @database.disconnect if @database
     @database = nil
     @queue    = nil
 
