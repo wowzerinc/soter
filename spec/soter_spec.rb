@@ -146,19 +146,31 @@ describe Soter do
 
   context "callbacks" do
 
-    it "#on_starting_job is called successfully" do
-      attempts = Soter.config.attempts
+    context "#on_starting_job" do
 
-      Soter.on_starting_job do |fork|
-        Soter.config.attempts += 1
+      it "is called successfully" do
+        attempts = Soter.config.attempts
+
+        Soter.on_starting_job { Soter.config.attempts += 1 }
+        Soter.on_starting_job { Soter.config.attempts += 2 }
+
+        Soter.enqueue(handler, {})
+        Soter.config.attempts.should == attempts + 3
       end
 
-      Soter.on_starting_job do |fork|
-        Soter.config.attempts += 2
+      it "passes the forking configuration to callbacks" do
+        Soter::JobWorker.any_instance.stub(:schrodingers_fork).
+          and_return( lambda { yield } )
+
+        Soter.config.fork = true
+        Soter.on_starting_job { |fork| fork.should == true }
+
+        Soter.config.fork = false
+        Soter.on_starting_job { |fork| fork.should == false }
+
+        Soter.enqueue(handler, {})
       end
 
-      Soter.enqueue(handler, {})
-      Soter.config.attempts.should == attempts + 3
     end
 
   end

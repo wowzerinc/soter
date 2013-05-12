@@ -74,7 +74,7 @@ module Soter
     private
 
     def fork?
-      Soter.config.fork
+      !!Soter.config.fork
     end
 
     def logfile
