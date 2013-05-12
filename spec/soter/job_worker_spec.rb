@@ -55,20 +55,4 @@ describe Soter::JobWorker do
     worker.start
   end
 
-  it "rescues itself from a locked queue" do
-    pending('what does this mean?')
-    old_timeout = Soter.config.timeout
-    Soter.config.timeout = QUEUE_SETTINGS[:timeout] = 0
-    JobDispatcher.instance_variable_set("@queue", nil)
-
-    QUEUE_SETTINGS[:workers].times do 
-      JobDispatcher.queue.insert(:to => "test@test.com")
-      JobDispatcher.queue.lock_next("test")
-    end
-
-    JobDispatcher.mail(:to => "test@test.com")
-    JobDispatcher.workers.should be_blank
-    QUEUE_SETTINGS[:timeout] = old_timeout
-  end
-
 end

@@ -17,10 +17,17 @@ describe Soter do
     }
   end
 
-  context "host configuration" do
+  it "resets the database connections" do
+    Soter.reset_database_connections.should be_true
+  end
 
-    before(:each) { @database = Soter.instance_variable_get(:@database) }
-    after(:each)  { Soter.instance_variable_set(:@database, @database)  }
+  it "resets connections only if there's something to reset" do
+    Soter.instance_variable_set(:@database, nil)
+
+    Soter.reset_database_connections.should be_false
+  end
+
+  context "configuration" do
 
     it 'configures one host correctly' do
       Soter.config.host     = 'host'
@@ -53,92 +60,118 @@ describe Soter do
       }
     end
 
+    it 'sets logger correctly' do
+      Soter.config.logger = logger
+
+      Soter.config.logger.should == logger
+    end
+
   end
 
-  it 'enqueues and starts a job' do
-    Soter.queue.should_receive(:insert).with(job)
-    Soter::JobWorker.any_instance.should_receive(:start)
+  context "queueing and dequeueing" do
 
-    Soter.enqueue(handler, job_params)
-  end
-
-  context 'with option active_at' do
-
-    it 'starts the job if the time has passed' do
-      pending("This isn't testing what it claims")
-      job['active_at'] = (active_at = current_time - 100)
+    it 'enqueues and starts a job' do
       Soter.queue.should_receive(:insert).with(job)
+      Soter::JobWorker.any_instance.should_receive(:start)
 
-      Soter.enqueue(handler, job_params, {active_at: active_at})
+      Soter.enqueue(handler, job_params)
     end
 
-    it 'does not start the job if the time has not passed' do
+    context 'with option active_at' do
+
+      it 'starts the job if the time has passed' do
+        pending("This isn't testing what it claims")
+        job['active_at'] = (active_at = current_time - 100)
+        Soter.queue.should_receive(:insert).with(job)
+
+        Soter.enqueue(handler, job_params, {active_at: active_at})
+      end
+
+      it 'does not start the job if the time has not passed' do
+        pending("This isn't testing what it claims")
+        job['active_at'] = (active_at = current_time + 100)
+        Soter.queue.should_receive(:insert).with(job)
+
+        Soter.enqueue(handler, job_params, {active_at: active_at})
+      end
+
+    end
+
+    it 'dequeues a job' do
+      Soter.queue.should_receive(:remove).with('job_params' => job_params)
+
+      Soter.dequeue(job_params)
+    end
+
+  end
+
+  context "workers" do
+
+    it "dispatches at most the specified number of workers" do
       pending("This isn't testing what it claims")
-      job['active_at'] = (active_at = current_time + 100)
       Soter.queue.should_receive(:insert).with(job)
+      Soter.queue.should_receive(:cleanup!).once
 
-      Soter.enqueue(handler, job_params, {active_at: active_at})
+      Soter.enqueue(handler, job_params)
+    end
+
+    it "calculates correct retry offset" do
+      expected_values_in_minutes = [2, 17, 122, 407, 962]
+
+      expected_values_in_minutes.each_with_index do |value, index|
+        retries = index + 1
+        Soter.send(:retry_offset, retries).should == value * 60
+      end
+    end
+
+    it "rescues itself from a locked queue" do
+      old_timeout = Soter.config.timeout
+      Soter.config.timeout = 0
+
+      #Lock the queue: all worker slots are occupied and timed out
+      Soter.max_workers.times do
+        Soter.queue.insert({})
+        Soter.queue.lock_next('stuck worker')
+      end
+
+      #Enqueue a new job: stuck locks are removed,
+      #the new worker clears the queue and exits
+      Soter.enqueue(handler)
+
+      Soter.workers.should be_empty
+      Soter.config.timeout = old_timeout
     end
 
   end
 
-  it 'dequeues a job' do
-    Soter.queue.should_receive(:remove).with('job_params' => job_params)
+  context "callbacks" do
 
-    Soter.dequeue(job_params)
-  end
+    it "#on_starting_job is called successfully" do
+      attempts = Soter.config.attempts
 
-  it 'sets logger correctly' do
-    Soter.config.logger = logger
+      Soter.on_starting_job do |fork|
+        Soter.config.attempts += 1
+      end
 
-    Soter.config.logger.should == logger
-  end
+      Soter.on_starting_job do |fork|
+        Soter.config.attempts += 2
+      end
 
-  it "dispatches at most the specified number of workers" do
-    pending("This isn't testing what it claims")
-    Soter.queue.should_receive(:insert).with(job)
-    Soter.queue.should_receive(:cleanup!).once
-
-    Soter.enqueue(handler, job_params)
-  end
-
-  it "calculates correct retry offset" do
-    expected_values = [ 2, 17, 122, 407, 962]
-
-    expected_values.each_with_index do |value, index|
-      retries = index+1
-      Soter.send(:retry_offset, retries).should == value * 60
+      Soter.enqueue(handler, {})
+      Soter.config.attempts.should == attempts + 3
     end
+
   end
 
-  it "resets the mongo connections" do
-    queue    = Soter.queue
-    database = Soter.database
+  context "forking" do
 
-    Soter.reset_database_connections
-
-    Soter.database.should_not == database
-    Soter.queue.should_not    == queue
-  end
-
-  it "resets connections only if there's something to reset" do
-    Soter.instance_variable_set(:@queue, nil)
-    Soter.instance_variable_set(:@database, nil)
-
-    expect do
-      Soter.reset_database_connections
-    end.to_not raise_error
-  end
-
-  context "Forking" do
-
-    before :each do
-      Soter.config.fork = true
-    end
+    before(:all) { Soter.config.fork = true  }
+    after(:all)  { Soter.config.fork = false }
 
     it "dispatches workers sucessfully" do
       pending("Concurrent tests are hard, what should we test?")
     end
 
   end
+
 end

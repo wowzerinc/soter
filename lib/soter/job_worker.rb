@@ -3,23 +3,27 @@ module Soter
 
     require 'digest/md5'
 
+    def initialize
+      @queue     = Soter.queue
+      @log       = Soter.config.logger || logfile
+      @callbacks = Soter.callbacks
+
+      @log.sync = true if @log.respond_to?(:sync=)
+    end
+
     def start
-      if fork?
-        fork do
-          Soter.reset_database_connections
-          perform
-        end
-      else
+      schrodingers_fork do
+        @callbacks.each { |callback| callback.call(fork?) }
         perform
       end
     end
 
-    def initialize
-      @queue = Soter.queue
-      @log   = Soter.config.logger || logfile
-
-      @log.sync = true if @log.respond_to?(:sync=)
-      @queue.cleanup! # remove expired locks
+    def schrodingers_fork
+      if fork?
+        fork { yield }
+      else
+        yield
+      end
     end
 
     def perform

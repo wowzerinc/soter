@@ -9,8 +9,8 @@ module Soter
 
       host_settings.merge!({
         collection: collection || "soter_queue",
-        timeout:    timeout || 300,
-        attempts:   attempts || 3
+        timeout:    timeout    || 300,
+        attempts:   attempts   || 3
       })
     end
 

@@ -29,25 +29,18 @@ module Soter
   end
 
   def self.reset_database_connections
-    @database.disconnect if @database
-    @database = nil
-    @queue    = nil
+    !!(@database.disconnect if @database)
+  end
 
-    !!queue
+  def self.on_starting_job(&callback)
+    callbacks << callback
   end
 
   private
 
-  # First 8 retry values in minutes are: 
-  # 2.minutes, 17.minutes, 2.hours, 6.hours,
-  # 16.hours, 31.hours, 54.hours, 85.hours
-  def self.retry_offset(retries)
-    ( (retries-1) ** 3 ) * (15 * 60) + 120
-  end
-
   def self.database
     hosts = if Soter.config.host
-              [Soter.config.host + ':' + Soter.config.port.to_s]
+              [ "#{Soter.config.host}:#{Soter.config.port}" ]
             else
               Soter.config.hosts
             end
@@ -59,9 +52,14 @@ module Soter
     @queue ||= Mongo::Queue.new(database, config.queue_settings)
   end
 
+  def self.callbacks
+    @callbacks ||= []
+  end
+
   def self.workers
+    #TODO: Remove this rescue clause, moped might not have this issue
     begin
-      result = @queue.send(:collection).
+      result = database[config.collection].
         distinct(:locked_by, {:locked_by => {"$ne" => nil}})
     rescue
       result = []
@@ -71,15 +69,19 @@ module Soter
   end
 
   def self.dispatch_worker
-    if workers.count < max_workers
-      JobWorker.new.start
-    else
-      queue.cleanup! #remove stuck locks
-    end
+    queue.cleanup! #remove stuck locks
+    JobWorker.new.start if workers.count < max_workers
   end
 
   def self.max_workers
     Soter.config.workers || 5
+  end
+
+  # First 8 retry values in minutes are:
+  # 2.minutes, 17.minutes, 2.hours, 6.hours,
+  # 16.hours, 31.hours, 54.hours, 85.hours
+  def self.retry_offset(retries)
+    ( (retries-1) ** 3 ) * (15 * 60) + 120
   end
 
   def self.recursive_const_get(name)
