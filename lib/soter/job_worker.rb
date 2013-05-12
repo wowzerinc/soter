@@ -6,6 +6,7 @@ module Soter
     def start
       if fork?
         fork do
+          Soter.reset_database_connections
           perform
         end
       else
