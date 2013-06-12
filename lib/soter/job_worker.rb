@@ -60,7 +60,7 @@ module Soter
 
           sleep(1) if fork?
         rescue Exception => e
-          @queue.complete(job, e.message)
+          @queue.error(job, e.message)
           log "#{process_id}: Failed job #{job['_id']}" +
             " with error #{e.message}"
           log "#{process_id}: Backtrace =>"
