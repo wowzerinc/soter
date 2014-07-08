@@ -25,12 +25,12 @@ module Soter
   end
 
   def self.dequeue(job_params)
-    queue.remove({ 'job' => { 'params' => job_params } })
+    queue.remove({ 'job.params' => job_params })
   end
 
   def self.reschedule(job_params, active_at)
-    queue.modify({ 'job' => { 'params' => job_params } },
-                 { 'active_at' => active_at })
+    queue.modify({ 'job.params' => job_params },
+                 { 'active_at'  => active_at  })
     dispatch_worker
   end
 

@@ -98,7 +98,7 @@ describe Soter do
     end
 
     it 'dequeues a job' do
-      Soter.queue.should_receive(:remove).with('job' => { 'params' => job_params })
+      Soter.queue.should_receive(:remove).with('job.params' => job_params)
 
       Soter.dequeue(job_params)
     end
