@@ -18,13 +18,13 @@ describe Soter do
   end
 
   it "resets the database connections" do
-    Soter.reset_database_connections.should be_true
+    Soter.reset_database_connections.should == true
   end
 
   it "resets connections only if there's something to reset" do
     Soter.instance_variable_set(:@database, nil)
 
-    Soter.reset_database_connections.should be_false
+    Soter.reset_database_connections.should == false
   end
 
   context "configuration" do
@@ -80,7 +80,7 @@ describe Soter do
     context 'with option active_at' do
 
       it 'starts the job if the time has passed' do
-        pending("This isn't testing what it claims")
+        skip("This isn't testing what it claims")
         job['active_at'] = (active_at = current_time - 100)
         Soter.queue.should_receive(:insert).with(job)
 
@@ -88,7 +88,7 @@ describe Soter do
       end
 
       it 'does not start the job if the time has not passed' do
-        pending("This isn't testing what it claims")
+        skip("This isn't testing what it claims")
         job['active_at'] = (active_at = current_time + 100)
         Soter.queue.should_receive(:insert).with(job)
 
@@ -98,7 +98,7 @@ describe Soter do
     end
 
     it 'dequeues a job' do
-      Soter.queue.should_receive(:remove).with('job_params' => job_params)
+      Soter.queue.should_receive(:remove).with('job' => { 'params' => job_params })
 
       Soter.dequeue(job_params)
     end
@@ -108,7 +108,7 @@ describe Soter do
   context "workers" do
 
     it "dispatches at most the specified number of workers" do
-      pending("This isn't testing what it claims")
+      skip("This isn't testing what it claims")
       Soter.queue.should_receive(:insert).with(job)
       Soter.queue.should_receive(:cleanup!).once
 
@@ -181,7 +181,7 @@ describe Soter do
     after(:all)  { Soter.config.fork = false }
 
     it "dispatches workers sucessfully" do
-      pending("Concurrent tests are hard, what should we test?")
+      skip("Concurrent tests are hard, what should we test?")
     end
 
   end

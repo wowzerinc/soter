@@ -46,11 +46,11 @@ describe Soter::JobWorker do
     worker.start
   end
 
-  it "should remove job from queue if wrong handler" do
+  it "should rescue from exceptions and mark as error" do
     Soter.queue.stub(:lock_next).and_return({'handler_class' => 'String'}, nil)
 
     handler.any_instance.should_receive(:perform).never
-    Soter.queue.should_receive(:complete)
+    Soter.queue.should_receive(:error)
 
     worker.start
   end
