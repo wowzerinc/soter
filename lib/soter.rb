@@ -45,17 +45,32 @@ module Soter
   private
 
   def self.database
+    return @database if @database
+
     hosts = if Soter.config.host
               [ "#{Soter.config.host}:#{Soter.config.port}" ]
             else
               Soter.config.hosts
             end
 
-    @database ||= Moped::Session.new(hosts, safe: true, consistency: :strong)
+    @database = Moped::Session.new(hosts, safe: true, consistency: :strong)
   end
 
   def self.queue
-    @queue ||= Mongo::Queue.new(database, config.queue_settings)
+    return @queue if @queue
+
+    @queue = Mongo::Queue.new(database, config.queue_settings)
+    create_indexes
+    @queue
+  end
+
+  def self.create_indexes
+    collection = database[config.queue_settings[:collection]]
+    indexes    = collection.indexes
+
+    indexes.create('_id' => 1)
+    indexes.create(locked_by: 1, attempts: 1, active_at: 1)
+    indexes.create(locked_by: 1, locked_at: 1)
   end
 
   def self.callbacks
@@ -65,7 +80,7 @@ module Soter
   def self.workers
     #TODO: Remove this rescue clause, moped might not have this issue
     begin
-      result = database[config.collection].
+      result = database[config.queue_settings[:collection]].
         distinct(:locked_by, {:locked_by => {"$ne" => nil}})
     rescue
       result = []
