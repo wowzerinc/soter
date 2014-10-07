@@ -20,7 +20,8 @@ module Soter
 
     def schrodingers_fork
       if fork?
-        fork { yield }
+        fork { yield; exit }
+        Process.detach
       else
         yield
       end
