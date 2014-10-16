@@ -46,6 +46,11 @@ module Soter
     callbacks[:error] << callback
   end
 
+  #Deprecated
+  def self.on_starting_job(&callback)
+    on_job_start(&callback)
+  end
+
   private
 
   def self.database
