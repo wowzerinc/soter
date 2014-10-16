@@ -13,10 +13,12 @@ module Soter
 
     def start
       schrodingers_fork do
-        @callbacks.each { |callback| callback.call(fork?) }
+        @callbacks[:start].each { |callback| callback.call(fork?) }
         perform
       end
     end
+
+    private
 
     def schrodingers_fork
       if fork?
@@ -61,18 +63,21 @@ module Soter
 
           sleep(1) if fork?
         rescue Exception => e
-          @queue.error(job, e.message)
+          @queue.complete(job, e.message)
           log "#{process_id}: Failed job #{job['_id']}" +
             " with error #{e.message}"
           log "#{process_id}: Backtrace =>"
           e.backtrace.each { |line| log "#{process_id}: #{line}"}
+          report_error(e)
         end
       end #while
       log "#{process_id}: Harakiri"
       @log.close
     end #start
 
-    private
+    def report_error(exception)
+      @callbacks[:error].each { |callback| callback.call(exception) }
+    end
 
     def fork?
       !!Soter.config.fork

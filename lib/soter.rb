@@ -38,8 +38,12 @@ module Soter
     !!(@database.disconnect if @database)
   end
 
-  def self.on_starting_job(&callback)
-    callbacks << callback
+  def self.on_job_start(&callback)
+    callbacks[:start] << callback
+  end
+
+  def self.on_job_error(&callback)
+    callbacks[:error] << callback
   end
 
   private
@@ -74,7 +78,7 @@ module Soter
   end
 
   def self.callbacks
-    @callbacks ||= []
+    @callbacks ||= Hash.new { |hash, key| hash[key] = [] }
   end
 
   def self.workers

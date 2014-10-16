@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'soter'
-  s.version     = '0.0.2'
+  s.version     = '0.0.3'
   s.summary     = "Background jobs"
   s.description = "ruby + mongoid background jobs library"
   s.authors     = %w(andresf solojavier)
