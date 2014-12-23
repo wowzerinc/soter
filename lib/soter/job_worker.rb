@@ -13,8 +13,9 @@ module Soter
 
     def start
       schrodingers_fork do
-        @callbacks[:start].each { |callback| callback.call(fork?) }
+        @callbacks[:start].each  { |callback| callback.call(fork?) }
         perform
+        @callbacks[:finish].each { |callback| callback.call(fork?) }
       end
     end
 

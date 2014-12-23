@@ -38,8 +38,12 @@ module Soter
     !!(@database.disconnect if @database)
   end
 
-  def self.on_job_start(&callback)
+  def self.on_worker_start(&callback)
     callbacks[:start] << callback
+  end
+
+  def self.on_worker_finish(&callback)
+    callbacks[:finish] << callback
   end
 
   def self.on_job_error(&callback)
@@ -47,8 +51,13 @@ module Soter
   end
 
   #Deprecated
+  def self.on_job_start(&callback)
+    on_worker_start(&callback)
+  end
+
+  #Deprecated
   def self.on_starting_job(&callback)
-    on_job_start(&callback)
+    on_worker_start(&callback)
   end
 
   private

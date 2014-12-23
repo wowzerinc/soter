@@ -46,11 +46,12 @@ describe Soter::JobWorker do
     worker.start
   end
 
-  it "should rescue from exceptions and mark as error" do
+  it "should rescue from exceptions and report the error" do
     Soter.queue.stub(:lock_next).and_return({'handler_class' => 'String'}, nil)
 
     handler.any_instance.should_receive(:perform).never
-    Soter.queue.should_receive(:error)
+    Soter.queue.should_receive(:complete)
+    worker.should_receive(:report_error)
 
     worker.start
   end
