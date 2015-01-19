@@ -34,6 +34,17 @@ module Soter
     dispatch_worker
   end
 
+  def self.update(handler, job_params={}, changes={})
+    query = {
+      'job' => {
+        'params' => job_params,
+        'class' => handler.to_s
+      }
+    }
+
+    queue.modify(query, changes)
+  end
+
   def self.reset_database_connections
     !!(@database.disconnect if @database)
   end
