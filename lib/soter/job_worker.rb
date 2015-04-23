@@ -37,6 +37,7 @@ module Soter
       log "#{process_id}: Spawning"
 
       while(job = @queue.lock_next(process_id))
+        GC.start
         log "#{process_id}: Starting work on job #{job['_id']}"
         log "#{process_id}: Job info =>"
 
