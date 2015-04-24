@@ -13,9 +13,13 @@ module Soter
 
     def start
       schrodingers_fork do
+        Soter.job_worker(true)
         @callbacks[:start].each  { |callback| callback.call(fork?) }
+
         perform
+
         @callbacks[:finish].each { |callback| callback.call(fork?) }
+        Soter.job_worker(false)
       end
     end
 

@@ -73,6 +73,14 @@ module Soter
 
   private
 
+  def self.job_worker?
+    @job_worker
+  end
+
+  def self.job_worker(boolean)
+    @job_worker = boolean
+  end
+
   def self.database
     return @database if @database
 
@@ -120,7 +128,10 @@ module Soter
 
   def self.dispatch_worker
     queue.cleanup! #remove stuck locks
-    JobWorker.new.start if workers.count < max_workers
+
+    if !job_worker? && workers.count < max_workers
+      JobWorker.new.start
+    end
   end
 
   def self.max_workers
