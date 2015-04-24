@@ -18,13 +18,8 @@ describe Soter do
   end
 
   it "resets the database connections" do
+    Soter.database
     Soter.reset_database_connections.should == true
-  end
-
-  it "resets connections only if there's something to reset" do
-    Soter.instance_variable_set(:@database, nil)
-
-    Soter.reset_database_connections.should == false
   end
 
   context "configuration" do

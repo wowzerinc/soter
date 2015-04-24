@@ -46,7 +46,10 @@ module Soter
   end
 
   def self.reset_database_connections
-    !!(@database.disconnect if @database)
+    @database.disconnect if @database
+    @queue = nil
+
+    !!queue
   end
 
   def self.on_worker_start(&callback)
@@ -102,7 +105,7 @@ module Soter
   end
 
   def self.create_indexes
-    collection = database[config.queue_settings[:collection]]
+    collection = queue.send(:collection)
     indexes    = collection.indexes
 
     indexes.create('_id' => 1)
@@ -117,13 +120,13 @@ module Soter
   def self.workers
     #TODO: Remove this rescue clause, moped might not have this issue
     begin
-      result = database[config.queue_settings[:collection]].
-        distinct(:locked_by, {:locked_by => {"$ne" => nil}})
-    rescue
-      result = []
+      result = queue.send(:collection).
+        find(:locked_by => {"$ne" => nil}).distinct(:locked_by) || []
+    rescue Moped::Errors::MongoError
+      result = Array.new(max_workers)
     end
 
-    result || []
+    result || Array.new(max_workers)
   end
 
   def self.dispatch_worker
