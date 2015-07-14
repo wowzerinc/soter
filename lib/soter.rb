@@ -45,6 +45,17 @@ module Soter
     queue.modify(query, changes)
   end
 
+  def self.queued?(handler, job_params={})
+    query = {
+      'job' => {
+        'params' => job_params,
+        'class' => handler.to_s
+      }
+    }
+
+    queue.find(query).count != 0
+  end
+
   def self.reset_database_connections
     @database.disconnect if @database
     @queue = nil
