@@ -50,7 +50,8 @@ module Soter
       'job' => {
         'params' => job_params,
         'class' => handler.to_s
-      }
+      },
+      'attempts' => 0
     }
 
     queue.find(query).count != 0
