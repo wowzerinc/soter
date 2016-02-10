@@ -60,6 +60,7 @@ module Soter
   def self.reset_database_connections
     @database.disconnect if @database
     @queue = nil
+    @indexes_created = false
 
     !!queue
   end
@@ -112,7 +113,7 @@ module Soter
     return @queue if @queue
 
     @queue = Mongo::Queue.new(database, config.queue_settings)
-    create_indexes
+    create_indexes unless @indexes_created
     @queue
   end
 
@@ -123,6 +124,8 @@ module Soter
     indexes.create('_id' => 1)
     indexes.create(locked_by: 1, attempts: 1, active_at: 1, priority: -1)
     indexes.create(locked_by: 1, locked_at: 1)
+
+    @indexes_created = true
   end
 
   def self.callbacks
