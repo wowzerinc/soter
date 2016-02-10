@@ -1,0 +1,42 @@
+GIT
+  remote: https://github.com/andresf/mongo_queue.git
+  revision: d852dcf0e01643e3df5e3eea9082315239f1cb2a
+  branch: moped
+  specs:
+    mongo_queue (0.2.3)
+      moped (~> 1.4)
+
+PATH
+  remote: .
+  specs:
+    soter (0.0.3)
+      moped (~> 1.5)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    diff-lcs (1.2.5)
+    moped (1.5.3)
+    rake (10.4.2)
+    rspec (3.3.0)
+      rspec-core (~> 3.3.0)
+      rspec-expectations (~> 3.3.0)
+      rspec-mocks (~> 3.3.0)
+    rspec-core (3.3.1)
+      rspec-support (~> 3.3.0)
+    rspec-expectations (3.3.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.3.0)
+    rspec-mocks (3.3.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.3.0)
+    rspec-support (3.3.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  mongo_queue!
+  rake
+  rspec
+  soter!

@@ -121,7 +121,7 @@ describe Soter do
 
     it "rescues itself from a locked queue" do
       old_timeout = Soter.config.timeout
-      Soter.config.timeout = 0
+      Soter.config.timeout = -1
 
       #Lock the queue: all worker slots are occupied and timed out
       Soter.max_workers.times do
