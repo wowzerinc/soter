@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/andresf/mongo_queue.git
-  revision: d852dcf0e01643e3df5e3eea9082315239f1cb2a
+  revision: aabfd180765fd1cad6fb480acac0b0005ecaa3d5
   branch: moped
   specs:
     mongo_queue (0.2.3)
@@ -40,3 +40,6 @@ DEPENDENCIES
   rake
   rspec
   soter!
+
+BUNDLED WITH
+   1.11.2
