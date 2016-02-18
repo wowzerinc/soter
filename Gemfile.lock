@@ -1,6 +1,7 @@
 GIT
   remote: https://github.com/andresf/mongo_queue.git
-  revision: aabfd180765fd1cad6fb480acac0b0005ecaa3d5
+  revision: d852dcf0e01643e3df5e3eea9082315239f1cb2a
+  ref: d852dcf
   branch: moped
   specs:
     mongo_queue (0.2.3)
