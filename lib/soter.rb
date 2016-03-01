@@ -57,6 +57,11 @@ module Soter
     queue.find(query).count != 0
   end
 
+  def self.keep_alive(id)
+    queue.modify({ '_id' => Moped::BSON::ObjectId.from_string(id) },
+                 { 'keep_alive_at' => Time.now.utc })
+  end
+
   def self.reset_database_connections
     @database.disconnect if @database
     @queue = nil

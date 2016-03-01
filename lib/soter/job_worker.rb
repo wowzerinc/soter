@@ -50,7 +50,7 @@ module Soter
 
         begin
           handler_class = Soter.recursive_const_get(job['job']['class'])
-          job_handler   = handler_class.new(job['job']['params'])
+          job_handler   = handler_class.new(job['job']['params'], 'id' => job['_id'])
 
           job_handler.perform
 

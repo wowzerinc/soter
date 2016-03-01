@@ -7,7 +7,13 @@ class FakeLogger
   def reset; @log = ''; end
 end
 
-FakeHandler = Struct.new(:perform) do
+FakeHandler = Class.new do
+  def initialize(*)
+  end
+
+  def perform
+  end
+
   def message
     'message'
   end
