@@ -17,7 +17,8 @@ module Soter
         'class' => handler.to_s
       },
       'queue_options' => queue_options,
-      'active_at' => queue_options.delete(:active_at)
+      'active_at' => queue_options.delete(:active_at),
+      'priority' => queue_options.delete(:priority) || 0
     }
 
     queue.insert(job)

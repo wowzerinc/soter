@@ -13,8 +13,21 @@ describe Soter do
         'class'  => 'FakeHandler'
       },
       'queue_options' => {},
-      'active_at'     => nil
+      'active_at'     => nil,
+      'priority'      => 0
     }
+  end
+
+  def get_last_job
+    Soter.queue.send(:collection).find.first
+  end
+
+  def get_stats
+    Soter.queue.stats
+  end
+
+  before(:each) do
+    Soter.queue.flush!
   end
 
   it "resets the database connections" do
@@ -63,7 +76,7 @@ describe Soter do
 
   end
 
-  context "queueing and dequeueing" do
+  context "working with the queue" do
 
     it 'enqueues and starts a job' do
       Soter.queue.should_receive(:insert).with(job)
@@ -72,30 +85,69 @@ describe Soter do
       Soter.enqueue(handler, job_params)
     end
 
+    it 'passes the priority option to the queue' do
+      Soter.enqueue(handler, job_params, priority: -1, active_at: current_time + 100)
+      expect(get_last_job['priority']).to eq(-1)
+    end
+
     context 'with option active_at' do
 
       it 'starts the job if the time has passed' do
-        skip("This isn't testing what it claims")
-        job['active_at'] = (active_at = current_time - 100)
-        Soter.queue.should_receive(:insert).with(job)
-
+        active_at = current_time - 100
         Soter.enqueue(handler, job_params, {active_at: active_at})
+
+        expect(get_stats[:available]).to eq(0)
       end
 
       it 'does not start the job if the time has not passed' do
-        skip("This isn't testing what it claims")
-        job['active_at'] = (active_at = current_time + 100)
-        Soter.queue.should_receive(:insert).with(job)
-
+        active_at = current_time + 100
         Soter.enqueue(handler, job_params, {active_at: active_at})
+
+        expect(get_stats[:available]).to eq(1)
       end
 
     end
 
     it 'dequeues a job' do
-      Soter.queue.should_receive(:remove).with('job.params' => job_params)
+      Soter.enqueue(handler, job_params, {active_at: current_time + 100})
+      expect(get_stats[:available]).to eq(1)
 
       Soter.dequeue(job_params)
+      expect(get_stats[:available]).to eq(0)
+      expect(get_stats[:total]).to eq(0)
+    end
+
+    it 'reschedules a job' do
+      Soter.enqueue(handler, job_params, {active_at: current_time + 100})
+      expect(get_stats[:available]).to eq(1)
+
+      Soter.reschedule(job_params, current_time - 100)
+      expect(get_stats[:available]).to eq(0)
+      expect(get_stats[:total]).to eq(0)
+    end
+
+    it 'updates a job' do
+      Soter.enqueue(handler, job_params, {active_at: current_time + 100})
+      Soter.update(handler, job_params, job: { params: { stuff: 1 } })
+      job = get_last_job
+
+      expect(job['job']['params']['stuff']).to eq(1)
+    end
+
+    it 'finds if a job is already queued' do
+      expect(Soter.queued?(handler, job_params)).to eq(false)
+      Soter.enqueue(handler, job_params, {active_at: current_time + 100})
+      expect(Soter.queued?(handler, job_params)).to eq(true)
+    end
+
+    it 'updates the keep alive for a job to avoid timeouts' do
+      Soter.enqueue(handler, job_params, {active_at: current_time + 100})
+      job = get_last_job
+      expect(job['keep_alive_at']).to eq(nil)
+
+      Soter.keep_alive(job['_id'])
+      job = get_last_job
+      expect(job['keep_alive_at'].to_i).to be_within(2).of(current_time.to_i)
     end
 
   end
