@@ -12,13 +12,13 @@ module Soter
 
   def self.enqueue(handler, job_params={}, queue_options={})
     job = {
-      'job' => {
-        'params' => job_params,
-        'class' => handler.to_s
+      job: {
+        params: job_params,
+        class:  handler.to_s
       },
-      'queue_options' => queue_options,
-      'active_at' => queue_options.delete(:active_at),
-      'priority' => queue_options.delete(:priority) || 0
+      queue_options: queue_options,
+      active_at:     queue_options.delete(:active_at),
+      priority:      queue_options.delete(:priority) || 0
     }
 
     queue.insert(job)

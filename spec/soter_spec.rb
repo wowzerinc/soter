@@ -8,13 +8,13 @@ describe Soter do
   let(:current_time) { Time.now.utc }
   let(:job) do
     {
-      'job' => {
-        'params' => job_params,
-        'class'  => 'FakeHandler'
+      job: {
+        params: job_params,
+        class:  'FakeHandler'
       },
-      'queue_options' => {},
-      'active_at'     => nil,
-      'priority'      => 0
+      queue_options: {},
+      active_at:     nil,
+      priority:      0
     }
   end
 
