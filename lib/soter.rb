@@ -128,7 +128,6 @@ module Soter
     indexes    = collection.indexes
 
     indexes.create('_id' => 1)
-    indexes.create(job: 1)
     indexes.create(locked_by: 1, attempts: 1, active_at: 1, priority: -1)
     indexes.create(locked_by: 1, locked_at: 1)
 
