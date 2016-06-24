@@ -1,0 +1,6 @@
+:tddium:
+  :ruby_version: ruby-2.1.8
+  :mongodb:
+    :config:
+      options:
+        allow_dynamic_fields: false
