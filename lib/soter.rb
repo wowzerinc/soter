@@ -59,7 +59,7 @@ module Soter
   end
 
   def self.keep_alive(id)
-    queue.modify({ '_id' => Moped::BSON::ObjectId.from_string(id) },
+    queue.modify({ '_id' => BSON::ObjectId.from_string(id) },
                  { 'keep_alive_at' => Time.now.utc })
   end
 
@@ -112,7 +112,7 @@ module Soter
               Soter.config.hosts
             end
 
-    @database = Moped::Session.new(hosts, safe: true, consistency: :strong)
+    @database = Moped::Session.new(hosts)
   end
 
   def self.queue

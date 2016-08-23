@@ -7,7 +7,7 @@ describe Soter::JobWorker do
   let(:worker)  { described_class.new }
   let(:job) do
     {
-      '_id'           => Moped::BSON::ObjectId.new,
+      '_id'           => BSON::ObjectId.new,
       'attempts'      => 0,
       'job'           => {
         'class' => handler.to_s,
