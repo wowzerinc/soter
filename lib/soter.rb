@@ -72,25 +72,27 @@ module Soter
   end
 
   def self.on_worker_start(&callback)
-    callbacks[:start] << callback
+    callbacks[:worker_start] << callback
   end
 
   def self.on_worker_finish(&callback)
-    callbacks[:finish] << callback
+    callbacks[:worker_finish] << callback
+  end
+
+  def self.on_job_start(&callback)
+    callbacks[:job_start] << callback
+  end
+
+  def self.on_job_finish(&callback)
+    callbacks[:job_finish] << callback
   end
 
   def self.on_job_error(&callback)
-    callbacks[:error] << callback
+    callbacks[:job_error] << callback
   end
 
-  #Deprecated
-  def self.on_job_start(&callback)
-    on_worker_start(&callback)
-  end
-
-  #Deprecated
-  def self.on_starting_job(&callback)
-    on_worker_start(&callback)
+  def self.worker_relative_directory
+    'tmp/soter_workers'
   end
 
   private
@@ -106,10 +108,10 @@ module Soter
   def self.database
     return @database if @database
 
-    hosts = if Soter.config.host
-              [ "#{Soter.config.host}:#{Soter.config.port}" ]
+    hosts = if config.host
+              [ "#{config.host}:#{config.port}" ]
             else
-              Soter.config.hosts
+              config.hosts
             end
 
     @database = Moped::Session.new(hosts)
@@ -139,27 +141,55 @@ module Soter
   end
 
   def self.workers
-    #TODO: Remove this rescue clause, moped might not have this issue
-    begin
-      result = queue.send(:collection).
-        find(:locked_by => {"$ne" => nil}).distinct(:locked_by) || []
-    rescue Moped::Errors::MongoError
-      result = Array.new(max_workers)
-    end
-
-    result || Array.new(max_workers)
+    Dir[worker_relative_directory + '/**']
   end
 
   def self.dispatch_worker
-    queue.cleanup! #remove stuck locks
+    cleanup_workers
 
-    if !job_worker? && workers.count < max_workers
+    if !job_worker? && !worker_slots_full?
       JobWorker.new.start
     end
   end
 
+  def self.cleanup_workers
+    #Clear all timed-out jobs
+    queue.cleanup!
+
+    #Find all the long-running workers
+    long_running_workers = workers.select do |worker|
+      begin
+        File.mtime(worker) + config.timeout <= Time.now.utc
+      rescue Errno::ENOENT
+        false
+      end
+    end
+
+    unless long_running_workers.empty?
+      #Find all the currently active workers
+      busy_workers = queue.send(:collection).
+                     find(:locked_by => {"$ne" => nil}).
+                     distinct(:locked_by) || []
+
+      #Remove active workers from the kill list
+      long_running_workers.reject! do |worker|
+        id = worker.split('/').last
+        busy_workers.include?(id)
+      end
+
+      #Worker is kill
+      long_running_workers.each do |worker|
+        File.delete(worker) if File.exist?(worker)
+      end
+    end
+  end
+
+  def self.worker_slots_full?
+    workers.count >= max_workers
+  end
+
   def self.max_workers
-    Soter.config.workers || 5
+    config.workers
   end
 
   # First 8 retry values in minutes are:

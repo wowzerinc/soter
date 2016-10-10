@@ -171,53 +171,36 @@ describe Soter do
       end
     end
 
-    it "rescues itself from a locked queue" do
-      pending("No idea how to test this. It IS rescuing itself, but " +
-              "the next worker just takes on all the jobs immediately.")
-      old_timeout = Soter.config.timeout
-      Soter.config.timeout = -1
-
-      #Lock the queue: all worker slots are occupied and timed out
-      Soter.max_workers.times do
-        Soter.queue.insert({})
-        Soter.queue.lock_next('stuck worker')
-      end
-
-      #Enqueue a new job: stuck locks are removed,
-      #the new worker clears the queue and exits
-      Soter.enqueue(handler)
-
-      Soter.workers.should be_empty
-      Soter.config.timeout = old_timeout
-    end
-
   end
 
   context "callbacks" do
 
-    context "#on_starting_job" do
+    before(:each) do
+      Soter.callbacks.clear
+    end
+
+    context "#on_worker_start" do
 
       it "is called successfully" do
         attempts = Soter.config.attempts
 
-        Soter.on_starting_job { Soter.config.attempts += 1 }
-        Soter.on_starting_job { Soter.config.attempts += 2 }
+        Soter.on_worker_start { Soter.config.attempts += 1 }
+        Soter.on_worker_start { Soter.config.attempts += 2 }
 
         Soter.enqueue(handler, {})
         Soter.config.attempts.should == attempts + 3
       end
 
       it "passes the forking configuration to callbacks" do
-        Soter::JobWorker.any_instance.stub(:schrodingers_fork).
-          and_return( lambda { yield } )
-
         Soter.config.fork = true
-        Soter.on_starting_job { |fork| fork.should == true }
+        Soter.on_worker_start { |forked| forked.should == true }
+        Soter.enqueue(handler, {})
+        Soter.callbacks.clear
 
         Soter.config.fork = false
-        Soter.on_starting_job { |fork| fork.should == false }
-
+        Soter.on_worker_start { |forked| forked.should == false }
         Soter.enqueue(handler, {})
+        Soter.callbacks.clear
       end
 
     end
@@ -226,11 +209,25 @@ describe Soter do
 
   context "forking" do
 
-    before(:all) { Soter.config.fork = true  }
-    after(:all)  { Soter.config.fork = false }
+    before(:each) { Soter.config.fork = true;  Soter.config.timeout = -1  }
+    after(:each)  { Soter.config.fork = false; Soter.config.timeout = nil }
 
     it "dispatches workers sucessfully" do
-      skip("Concurrent tests are hard, what should we test?")
+      skip("This spec should be run individually, and it does not guarantee " +
+           "that it will pass every single time. There is a race condition " +
+           "that can happen whenever jobs are enqueued faster than workers " +
+           "are able to claim them AND expired workers exist." +
+           "In most scenarios this should not be a problem, but in specs this " +
+           "is prevented by the sleep() call.")
+      Soter.config.fork = true
+
+      100.times do
+        Soter.enqueue(handler, {})
+        sleep(0.05)
+        Soter.workers.count.should <= Soter.config.workers
+      end
+
+      Soter.config.fork = false
     end
 
   end

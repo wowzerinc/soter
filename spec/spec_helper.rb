@@ -12,6 +12,7 @@ FakeHandler = Class.new do
   end
 
   def perform
+    sleep(Random.rand) if Soter.config.fork
   end
 
   def message

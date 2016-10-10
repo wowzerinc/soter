@@ -7,11 +7,25 @@ module Soter
 
       host_settings.merge!(database: database) if database
 
-      host_settings.merge!({
-        collection: collection || "soter_queue",
-        timeout:    timeout    || 300,
-        attempts:   attempts   || 3
-      })
+      host_settings.merge!(collection: collection,
+                           timeout:    timeout,
+                           attempts:   attempts)
+    end
+
+    def timeout
+      self['timeout'] || 300
+    end
+
+    def attempts
+      self['attempts'] || 3
+    end
+
+    def collection
+      self['collection'] || "soter_queue"
+    end
+
+    def workers
+      self['workers'] || 5
     end
 
   end
