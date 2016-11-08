@@ -28,5 +28,6 @@ module Handlers
   Fake = FakeHandler
 end
 
-Soter.config.host = 'localhost'
-Soter.config.port = 27017
+Soter.config.host              = 'localhost'
+Soter.config.port              = 27017
+Soter.config.worker_miss_sleep = 0

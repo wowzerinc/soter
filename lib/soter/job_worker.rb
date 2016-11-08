@@ -4,9 +4,10 @@ module Soter
     require 'digest/md5'
 
     def initialize
-      @queue     = Soter.queue
-      @log       = Soter.config.logger || logfile
-      @callbacks = Soter.callbacks
+      @queue        = Soter.queue
+      @log          = Soter.config.logger || logfile
+      @callbacks    = Soter.callbacks
+      @queue_misses = 0
 
       @log.sync = true if @log.respond_to?(:sync=)
     end
@@ -40,7 +41,20 @@ module Soter
     def perform
       log "#{worker_id}: Spawning"
 
-      while(job = @queue.lock_next(worker_id))
+      while true
+        unless job = @queue.lock_next(worker_id)
+          @queue_misses += 1
+
+          log "#{worker_id}: Queue miss ##{@queue_misses}"
+
+          if @queue_misses >= queue_misses_limit
+            break
+          else
+            sleep(queue_miss_sleep_seconds)
+            next
+          end
+        end
+
         GC.start
         @callbacks[:job_start].each { |callback| callback.call(job) }
         touch_worker_file
@@ -122,6 +136,14 @@ module Soter
 
     def log(message)
       @log << message + "\n"
+    end
+
+    def queue_misses_limit
+      Soter.config.worker_misses_limit
+    end
+
+    def queue_miss_sleep_seconds
+      Soter.config.worker_miss_sleep
     end
 
   end

@@ -1,6 +1,7 @@
 module Soter
   class Config < Struct.new(:fork, :logfile, :logger, :host, :port, :database,
-                            :workers, :attempts, :hosts, :timeout, :collection)
+                            :workers, :attempts, :hosts, :timeout, :collection,
+                            :worker_misses_limit, :worker_miss_sleep)
 
     def queue_settings
       host_settings = host ? {host: host, port: port} : {hosts: hosts}
@@ -10,6 +11,14 @@ module Soter
       host_settings.merge!(collection: collection,
                            timeout:    timeout,
                            attempts:   attempts)
+    end
+
+    def worker_misses_limit
+      self['worker_misses_limit'] || 3
+    end
+
+    def worker_miss_sleep
+      self['worker_miss_sleep'] || 5
     end
 
     def timeout
