@@ -9,5 +9,5 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency('rspec')
   s.add_development_dependency('rake')
-  s.add_dependency('moped', '~> 2.0.0')
+  s.add_dependency('mongo', '~> 2.0')
 end

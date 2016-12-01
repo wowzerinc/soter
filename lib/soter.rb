@@ -1,7 +1,7 @@
 require_relative 'soter/config'
 require_relative 'soter/job_worker'
 
-require 'moped'
+require 'mongo'
 require 'mongo_queue'
 
 module Soter
@@ -64,7 +64,7 @@ module Soter
   end
 
   def self.reset_database_connections
-    @database.disconnect if @database
+    @database.close if @database
     @queue = nil
     @indexes_created = false
 
@@ -114,7 +114,7 @@ module Soter
               config.hosts
             end
 
-    @database = Moped::Session.new(hosts)
+    @database = Mongo::Client.new(hosts)
   end
 
   def self.queue
@@ -129,9 +129,9 @@ module Soter
     collection = queue.send(:collection)
     indexes    = collection.indexes
 
-    indexes.create('_id' => 1)
-    indexes.create(locked_by: 1, attempts: 1, active_at: 1, priority: -1)
-    indexes.create(locked_by: 1, locked_at: 1)
+    indexes.create_one('_id' => 1)
+    indexes.create_one(locked_by: 1, attempts: 1, active_at: 1, priority: -1)
+    indexes.create_one(locked_by: 1, locked_at: 1)
 
     @indexes_created = true
   end

@@ -1,4 +1,5 @@
 require_relative '../lib/soter.rb'
+Mongo::Logger.logger.level = ::Logger::FATAL
 
 class FakeLogger
   def <<(s); (@log ||= '') << s; end
