@@ -47,10 +47,12 @@ module Soter
 
           log "#{worker_id}: Queue miss ##{@queue_misses}"
 
+          break if queue_miss_sleep_seconds > 0
+
           if @queue_misses >= queue_misses_limit
             break
           else
-            sleep(queue_miss_sleep_seconds) if queue_miss_sleep_seconds > 0
+            sleep(queue_miss_sleep_seconds)
             next
           end
         end
