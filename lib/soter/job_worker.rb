@@ -50,7 +50,7 @@ module Soter
           if @queue_misses >= queue_misses_limit
             break
           else
-            sleep(queue_miss_sleep_seconds)
+            sleep(queue_miss_sleep_seconds) if queue_miss_sleep_seconds > 0
             next
           end
         end
