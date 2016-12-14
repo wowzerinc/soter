@@ -200,7 +200,7 @@ module Soter
   end
 
   def self.recursive_const_get(name)
-    name.to_s.split("::").inject(self) do |b, c|
+    name.to_s.split("::").inject(Object) do |b, c|
       b.const_get(c)
     end
   end

@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/andresf/mongo_queue.git
-  revision: f537ace1c2dac72a6368ff4bf2cbdd19c1d9ef99
+  revision: a6dd6dbc74827b8dc5ae5b8b9908ad03746145a3
   branch: mongo-2.x
   specs:
     mongo_queue (0.2.4)
@@ -19,7 +19,7 @@ GEM
     diff-lcs (1.2.5)
     mongo (2.4.0)
       bson (~> 4.2.0)
-    rake (11.3.0)
+    rake (12.0.0)
     rspec (3.5.0)
       rspec-core (~> 3.5.0)
       rspec-expectations (~> 3.5.0)
