@@ -58,6 +58,12 @@ module Soter
     queue.find(query).count != 0
   end
 
+  def self.queued_by_param?(handler, key, value)
+    query = { "job.params.#{key}" => value }
+
+    queue.find(query).count != 0
+  end
+
   def self.keep_alive(id)
     queue.modify({ '_id' => BSON::ObjectId.from_string(id) },
                  { 'keep_alive_at' => Time.now.utc })
