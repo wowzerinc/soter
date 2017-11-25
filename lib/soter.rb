@@ -59,7 +59,10 @@ module Soter
   end
 
   def self.queued_by_param?(handler, key, value)
-    query = { "job.params.#{key}" => value }
+    query = {
+      "job.params.#{key}" => value,
+      "job.class"         => handler.to_s
+    }
 
     queue.find(query).count != 0
   end
