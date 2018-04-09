@@ -127,8 +127,8 @@ describe Soter do
     end
 
     it 'updates a job' do
-      Soter.enqueue(handler, job_params, {active_at: current_time + 100})
-      Soter.update(handler, job_params, job: { params: { stuff: 1 } })
+      job = Soter.enqueue(handler, job_params, {active_at: current_time + 100})
+      Soter.update(job['_id'], job: { params: { stuff: 1 } })
       job = get_last_job
 
       expect(job['job']['params']['stuff']).to eq(1)

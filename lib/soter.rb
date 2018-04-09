@@ -21,8 +21,9 @@ module Soter
       priority:      queue_options.delete(:priority) || 0
     }
 
-    queue.insert(job)
+    job = queue.insert(job)
     dispatch_worker
+    return job
   end
 
   def self.dequeue(job_params)
@@ -35,15 +36,8 @@ module Soter
     dispatch_worker
   end
 
-  def self.update(handler, job_params={}, changes={})
-    query = {
-      'job' => {
-        'params' => job_params,
-        'class' => handler.to_s
-      }
-    }
-
-    queue.modify(query, changes)
+  def self.update(id, changes={})
+    queue.modify({ '_id' => BSON::ObjectId.from_string(id) }, changes)
   end
 
   def self.queued?(handler, job_params={})
@@ -59,8 +53,7 @@ module Soter
   end
 
   def self.keep_alive(id)
-    queue.modify({ '_id' => BSON::ObjectId.from_string(id) },
-                 { 'keep_alive_at' => Time.now.utc })
+    update(id, { 'keep_alive_at' => Time.now.utc })
   end
 
   def self.reset_database_connections
@@ -130,6 +123,7 @@ module Soter
     indexes    = collection.indexes
 
     indexes.create_one('_id' => 1)
+    indexes.create_one(attempts: 1) #queued?
     indexes.create_one(locked_by: 1, attempts: 1, active_at: 1, priority: -1)
     indexes.create_one(locked_by: 1, locked_at: 1)
 
