@@ -141,6 +141,8 @@ module Soter
   def self.dispatch_worker
     cleanup_workers
 
+    throttle_worker_request
+
     if !job_worker? && !worker_slots_full?
       JobWorker.new.start
     end
@@ -176,6 +178,10 @@ module Soter
         File.delete(worker) if File.exist?(worker)
       end
     end
+  end
+
+  def self.throttle_worker_request
+    sleep(rand(0..config.worker_throttle_value))
   end
 
   def self.worker_slots_full?

@@ -1,7 +1,8 @@
 module Soter
   class Config < Struct.new(:fork, :logfile, :logger, :host, :port, :database,
                             :workers, :attempts, :hosts, :timeout, :collection,
-                            :worker_misses_limit, :worker_miss_sleep)
+                            :worker_misses_limit, :worker_miss_sleep,
+                            :worker_throttle_value)
 
     def queue_settings
       host_settings = host ? {host: host, port: port} : {hosts: hosts}
@@ -35,6 +36,12 @@ module Soter
 
     def workers
       self['workers'] || 5
+    end
+
+    def worker_throttle_value
+      value = self['worker_throttle_value'] || 2.0
+      raise "Throttle value must be a float" unless value.is_a?(Float)
+      value
     end
 
   end
