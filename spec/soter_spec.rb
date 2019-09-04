@@ -27,7 +27,7 @@ describe Soter do
   end
 
   before(:each) do
-    Soter.queue.flush!
+    Soter.database.database.drop
     Soter.config.worker_throttle_value = 0.0001
   end
 

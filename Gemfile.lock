@@ -1,6 +1,6 @@
 GIT
-  remote: https://github.com/andresf/mongo_queue.git
-  revision: a6dd6dbc74827b8dc5ae5b8b9908ad03746145a3
+  remote: https://github.com/wepow/mongo_queue.git
+  revision: ef5597d4cf18ac1b77c4654d155efc6e4b7422c2
   branch: mongo-2.x
   specs:
     mongo_queue (0.2.4)
@@ -44,4 +44,4 @@ DEPENDENCIES
   soter!
 
 BUNDLED WITH
-   1.11.2
+   1.17.3
