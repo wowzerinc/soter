@@ -57,7 +57,7 @@ module Soter
   end
 
   def self.reset_database_connections
-    @database.close if @database
+    @client.close if @client
     @queue = nil
     @indexes_created = false
 
@@ -98,8 +98,8 @@ module Soter
     @job_worker = boolean
   end
 
-  def self.database
-    return @database if @database
+  def self.client
+    return @client if @client
 
     hosts = if config.host
               [ "#{config.host}:#{config.port}" ]
@@ -107,13 +107,13 @@ module Soter
               config.hosts
             end
 
-    @database = Mongo::Client.new(hosts)
+    @client = Mongo::Client.new(hosts)
   end
 
   def self.queue
     return @queue if @queue
 
-    @queue = Mongo::Queue.new(database, config.queue_settings)
+    @queue = Mongo::Queue.new(client, config.queue_settings)
     create_indexes unless @indexes_created
     @queue
   end
