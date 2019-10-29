@@ -30,6 +30,10 @@ module Soter
     queue.remove({ 'job.params' => job_params })
   end
 
+  def self.dequeue_by(key:, value:)
+    queue.remove({ "job.params.#{key}" => value })
+  end
+
   def self.reschedule(job_params, active_at)
     queue.modify({ 'job.params' => job_params },
                  { 'active_at'  => active_at  })
@@ -47,6 +51,15 @@ module Soter
         'class' => handler.to_s
       },
       'attempts' => 0
+    }
+
+    queue.find(query).count != 0
+  end
+
+  def self.queued_by?(handler, key:, value:)
+    query = {
+      "job.params.#{key}" => value,
+      "job.class"         => handler.to_s
     }
 
     queue.find(query).count != 0
