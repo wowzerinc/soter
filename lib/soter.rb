@@ -107,7 +107,7 @@ module Soter
               config.hosts
             end
 
-    @database = Mongo::Client.new(hosts)
+    @database = Mongo::Client.new(hosts, config.options)
   end
 
   def self.queue

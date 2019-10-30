@@ -1,5 +1,5 @@
 module Soter
-  class Config < Struct.new(:fork, :logfile, :logger, :host, :port, :database,
+  class Config < Struct.new(:fork, :logfile, :logger, :host, :port, :options,
                             :workers, :attempts, :hosts, :timeout, :collection,
                             :worker_misses_limit, :worker_miss_sleep,
                             :worker_throttle_value)
@@ -7,7 +7,7 @@ module Soter
     def queue_settings
       host_settings = host ? {host: host, port: port} : {hosts: hosts}
 
-      host_settings.merge!(database: database) if database
+      host_settings.merge!(database: options['database']) if options['database']
 
       host_settings.merge!(collection: collection,
                            timeout:    timeout,
@@ -36,6 +36,10 @@ module Soter
 
     def workers
       self['workers'] || 5
+    end
+
+    def options
+      self['options'] || {}
     end
 
     def worker_throttle_value

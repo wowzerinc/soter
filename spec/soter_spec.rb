@@ -41,7 +41,7 @@ describe Soter do
     it 'configures one host correctly' do
       Soter.config.host     = 'host'
       Soter.config.port     = 'port'
-      Soter.config.database = 'test'
+      Soter.config.options  = { 'database' => 'test' }
       Soter.config.attempts = 3
 
       Soter.config.queue_settings.should == {
@@ -57,7 +57,7 @@ describe Soter do
     it 'configures multiple hosts correctly' do
       Soter.config.host     = nil
       Soter.config.hosts    = ['localhost:27017']
-      Soter.config.database = 'test'
+      Soter.config.options  = { 'database' => 'test' }
       Soter.config.attempts = 3
 
       Soter.config.queue_settings.should == {
