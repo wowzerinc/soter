@@ -60,6 +60,7 @@ module Soter
     @database.close if @database
     @queue = nil
     @indexes_created = false
+    @database = nil
 
     !!queue
   end
