@@ -1,6 +1,6 @@
 GIT
-  remote: https://github.com/andresf/mongo_queue.git
-  revision: a6dd6dbc74827b8dc5ae5b8b9908ad03746145a3
+  remote: https://github.com/wepow/mongo_queue.git
+  revision: ef5597d4cf18ac1b77c4654d155efc6e4b7422c2
   branch: mongo-2.x
   specs:
     mongo_queue (0.2.4)
@@ -10,15 +10,14 @@ PATH
   remote: .
   specs:
     soter (0.0.3)
-      mongo (~> 2.4)
 
 GEM
   remote: http://rubygems.org/
   specs:
-    bson (4.2.0)
+    bson (4.5.0)
     diff-lcs (1.2.5)
-    mongo (2.4.0)
-      bson (~> 4.2.0)
+    mongo (2.10.2)
+      bson (>= 4.4.2, < 5.0.0)
     rake (12.0.0)
     rspec (3.5.0)
       rspec-core (~> 3.5.0)
@@ -44,4 +43,4 @@ DEPENDENCIES
   soter!
 
 BUNDLED WITH
-   1.11.2
+   1.14.6

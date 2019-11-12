@@ -27,12 +27,12 @@ describe Soter do
   end
 
   before(:each) do
-    Soter.queue.flush!
+    Soter.drop_queue_collection
     Soter.config.worker_throttle_value = 0.0001
   end
 
   it "resets the database connections" do
-    Soter.database
+    Soter.client
     Soter.reset_database_connections.should == true
   end
 
