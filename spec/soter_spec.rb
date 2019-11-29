@@ -50,7 +50,7 @@ describe Soter do
         database:   'test',
         collection: 'soter_queue',
         timeout:    300,
-        attempts:   3
+        attempts:   3,
       }
     end
 
@@ -65,7 +65,7 @@ describe Soter do
         database:   'test',
         collection: 'soter_queue',
         timeout:    300,
-        attempts:   3
+        attempts:   3,
       }
     end
 
@@ -73,6 +73,13 @@ describe Soter do
       Soter.config.logger = logger
 
       Soter.config.logger.should == logger
+    end
+
+    it 'sets dispatch_workers correctly' do
+      Soter.config.dispatch_workers.should == true
+      Soter.config.dispatch_workers = false
+      Soter.config.dispatch_workers.should == false
+      Soter.config.dispatch_workers = true
     end
 
   end

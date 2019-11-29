@@ -2,7 +2,7 @@ module Soter
   class Config < Struct.new(:fork, :logfile, :logger, :host, :port, :options,
                             :workers, :attempts, :hosts, :timeout, :collection,
                             :worker_misses_limit, :worker_miss_sleep,
-                            :worker_throttle_value)
+                            :worker_throttle_value, :dispatch_workers)
 
     def queue_settings
       host_settings = host ? {host: host, port: port} : {hosts: hosts}
@@ -12,6 +12,10 @@ module Soter
       host_settings.merge!(collection: collection,
                            timeout:    timeout,
                            attempts:   attempts)
+    end
+
+    def dispatch_workers
+      self['dispatch_workers'].nil? ? true : self['dispatch_workers']
     end
 
     def worker_misses_limit

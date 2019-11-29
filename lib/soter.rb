@@ -144,6 +144,8 @@ module Soter
   end
 
   def self.dispatch_worker
+    return false unless config.dispatch_workers
+
     cleanup_workers
 
     throttle_worker_request
