@@ -2,7 +2,7 @@ module Soter
   class Config < Struct.new(:fork, :logfile, :logger, :host, :port, :options,
                             :workers, :attempts, :hosts, :timeout, :collection,
                             :worker_misses_limit, :worker_miss_sleep,
-                            :worker_throttle_value, :dispatch_workers)
+                            :worker_throttle_value, :dispatch_workers, :client)
 
     def queue_settings
       host_settings = host ? {host: host, port: port} : {hosts: hosts}

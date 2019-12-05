@@ -104,15 +104,17 @@ module Soter
   end
 
   def self.client
-    return @client if @client
+    return config.client
 
-    hosts = if config.host
-              [ "#{config.host}:#{config.port}" ]
-            else
-              config.hosts
-            end
+    # return @client if @client
 
-    @client = Mongo::Client.new(hosts, config.options)
+    # hosts = if config.host
+    #           [ "#{config.host}:#{config.port}" ]
+    #         else
+    #           config.hosts
+    #         end
+
+    # @client = Mongo::Client.new(hosts, config.options)
   end
 
   def self.queue
