@@ -2,6 +2,7 @@ module Soter
   class JobWorker
 
     require 'digest/md5'
+    require 'securerandom'
 
     def initialize
       @queue        = Soter.queue
@@ -108,7 +109,7 @@ module Soter
     def worker_id
       @worker_id ||=
         Digest::MD5.
-        hexdigest("#{Socket.gethostname}-#{Process.pid}-#{Thread.current}")
+        hexdigest("#{Socket.gethostname}-#{Process.pid}-#{Thread.current}-#{SecureRandom.uuid.gsub("-", "")}")
     end
 
     def fork?
