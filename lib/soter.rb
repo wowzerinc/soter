@@ -66,7 +66,7 @@ module Soter
   end
 
   def self.drop_queue_collection
-    queue.instance_variable_get("@connection").database.drop
+    queue.connection[config[:collection]].drop
   end
 
   def self.on_worker_start(&callback)
