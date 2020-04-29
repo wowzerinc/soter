@@ -20,8 +20,14 @@ module Soter
       active_at:     queue_options.delete(:active_at),
       priority:      queue_options.delete(:priority) || 0
     }
+    Rails.logger.info("Soter.enqueue: #{Time.now} Enqueing job")
+    from       = Time.now
 
-    job = queue.insert(job)
+    job        = queue.insert(job)
+    
+    to         = Time.now
+    time_taken = to - from
+    Rails.logger.info("Soter.enqueue: #{Time.now} Finished enqueueing, time taken: #{time_taken}")
     dispatch_worker
     return job
   end

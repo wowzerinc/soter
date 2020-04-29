@@ -40,13 +40,13 @@ module Soter
     end
 
     def perform
-      log "#{worker_id}: Spawning"
+      log "#{Time.now} #{worker_id}: #{Time.now} Spawning"
 
       while true
         unless job = @queue.lock_next(worker_id)
           @queue_misses += 1
 
-          log "#{worker_id}: Queue miss ##{@queue_misses}"
+          log "#{Time.now} #{worker_id}: #{Time.now} Queue miss ##{@queue_misses}"
 
           break if queue_miss_sleep_seconds <= 0
 
@@ -61,8 +61,8 @@ module Soter
         GC.start
         @callbacks[:job_start].each { |callback| callback.call(job) }
         touch_worker_file
-        log "#{worker_id}: Starting work on job #{job['_id']}"
-        log "#{worker_id}: Job info =>"
+        log "#{Time.now} #{worker_id}: Starting work on job #{job['_id']}"
+        log "#{Time.now} #{worker_id}: Job info =>"
 
         job.each {
           |key, value| log  "#{worker_id}: {#{key} : #{value}}" }
@@ -73,24 +73,24 @@ module Soter
 
           job_handler.perform
 
-          log "#{worker_id}: " + job_handler.message
+          log "#{Time.now} #{worker_id}: " + job_handler.message
 
           if job_handler.success?
             @queue.complete(job, worker_id)
-            log "#{worker_id}: Completed job #{job['_id']}"
+            log "#{Time.now} #{worker_id}: Completed job #{job['_id']}"
           else
             offset           = Soter.retry_offset(job['attempts']+1)
             job['active_at'] = Time.now.utc + offset
 
             @queue.error(job, job_handler.message)
-            log "#{worker_id}: Failed job #{job['_id']}"
+            log "#{Time.now} #{worker_id}: Failed job #{job['_id']}"
           end
         rescue Exception => e
           @queue.complete(job, worker_id)
-          log "#{worker_id}: Failed job #{job['_id']}" +
+          log "#{Time.now} #{worker_id}: Failed job #{job['_id']}" +
             " with error #{e.message}"
-          log "#{worker_id}: Backtrace =>"
-          e.backtrace.each { |line| log "#{worker_id}: #{line}"}
+          log "#{Time.now} #{worker_id}: Backtrace =>"
+          e.backtrace.each { |line| log "#{Time.now} #{worker_id}: #{line}"}
           report_error(e)
         ensure
           @callbacks[:job_finish].each { |callback| callback.call(job) }
@@ -98,7 +98,7 @@ module Soter
 
         break if Soter.worker_slots_full?
       end #while
-      log "#{worker_id}: Harakiri"
+      log "#{Time.now} #{worker_id}: Harakiri"
       @log.close
     end #start
 
