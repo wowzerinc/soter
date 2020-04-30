@@ -40,13 +40,13 @@ module Soter
     end
 
     def perform
-      log "#{Time.now} #{worker_id}: #{Time.now} Spawning"
+      log "#{Time.now} #{worker_id}: Spawning"
 
       while true
         unless job = @queue.lock_next(worker_id)
           @queue_misses += 1
 
-          log "#{Time.now} #{worker_id}: #{Time.now} Queue miss ##{@queue_misses}"
+          log "#{Time.now} #{worker_id}: Queue miss ##{@queue_misses}"
 
           break if queue_miss_sleep_seconds <= 0
 
