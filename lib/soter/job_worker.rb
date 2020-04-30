@@ -58,7 +58,7 @@ module Soter
           end
         end
 
-        GC.start
+        #GC.start
         @callbacks[:job_start].each { |callback| callback.call(job) }
         touch_worker_file
         log "#{Time.now} #{worker_id}: Starting work on job #{job['_id']}"
