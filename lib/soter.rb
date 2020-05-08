@@ -57,12 +57,12 @@ module Soter
   end
 
   def self.reset_database_connections
-    @client.close if @client
-    @queue = nil
-    @indexes_created = false
-    @database = nil
+    # @client.close if @client
+    # @queue = nil
+    # @indexes_created = false
+    # @database = nil
 
-    !!queue
+    # !!queue
   end
 
   def self.drop_queue_collection
