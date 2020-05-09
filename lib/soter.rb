@@ -111,13 +111,7 @@ module Soter
   def self.client
     return @client if @client
 
-    hosts = [ "ecf-wpprodmongodb-shard-00-00.bz9jz.azure.mongodb.net:27017",
-              "ecf-wpprodmongodb-shard-00-01.bz9jz.azure.mongodb.net:27017",
-              "ecf-wpprodmongodb-shard-00-02.bz9jz.azure.mongodb.net:27017",
-              "ecf-wpprodmongodb-shard-00-03.bz9jz.azure.mongodb.net:27017"]
-    options = ::Mongoid.default_client.options
-              
-    client   = ::Mongo::Client.new(hosts, options)
+    client   = ::Mongo::Client.new(config.hosts, config.options)
     Rails.logger.debug("#{DateTime.now.utc.iso8601} [PERFORMANCE] [#{Process.pid}] Soter.client: #{client.object_id}")
     @client = client
   end
