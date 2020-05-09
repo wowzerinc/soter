@@ -62,7 +62,7 @@ module Soter
     @queue = nil
     @indexes_created = false
     @database = nil
-    Rails.logger.debug("#{DateTime.now.utc.iso8601} [PERFORMANCE] [#{Process.pid}] Soter.reset_database_connections client: #{client.object_id}")
+    Rails.logger.debug("#{DateTime.now.utc.iso8601} [PERFORMANCE] [#{Process.pid}] Soter.reset_database_connections client: #{@client.object_id}")
     !!queue
   end
 
