@@ -58,8 +58,7 @@ module Soter
 
   def self.reset_database_connections
     @client.close if @client
-    @client.reconnect if @client
-
+    @client = nil
     @queue = nil
     @indexes_created = false
     @database = nil
@@ -106,17 +105,12 @@ module Soter
   end
 
   def self.client
-    return config.client
+    return @client if @client
 
-    # return @client if @client
-
-    # hosts = if config.host
-    #           [ "#{config.host}:#{config.port}" ]
-    #         else
-    #           config.hosts
-    #         end
-
-    # @client = Mongo::Client.new(hosts, config.options)
+    database = ::Mongoid.default_client.database.name
+    client = ::Mongoid.default_client.use(database)
+    
+    @client = client
   end
 
   def self.queue
