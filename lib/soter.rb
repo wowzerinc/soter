@@ -70,6 +70,10 @@ module Soter
     queue.connection[config[:collection]].drop
   end
 
+  def self.before_worker_start(&:callback)
+    callbacks[:before_worker_start] << callback
+  end
+
   def self.on_worker_start(&callback)
     callbacks[:worker_start] << callback
   end
@@ -108,7 +112,7 @@ module Soter
     return @client if @client
 
     database = ::Mongoid.default_client.database.name
-    client = ::Mongoid.default_client.use(database)
+    client   = ::Mongoid.default_client.use(database)
     
     @client = client
   end

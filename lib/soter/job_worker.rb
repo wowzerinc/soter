@@ -14,6 +14,8 @@ module Soter
     end
 
     def start
+      @callbacks[:before_worker_start].each  { |callback| callback.call(fork?) }
+      
       schrodingers_fork do
         Soter.job_worker(true)
         touch_worker_file
