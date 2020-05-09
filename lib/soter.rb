@@ -70,7 +70,7 @@ module Soter
     queue.connection[config[:collection]].drop
   end
 
-  def self.before_worker_start(&:callback)
+  def self.before_worker_start(&callback)
     callbacks[:before_worker_start] << callback
   end
 
