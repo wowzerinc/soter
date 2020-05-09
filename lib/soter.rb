@@ -62,7 +62,7 @@ module Soter
     @queue = nil
     @indexes_created = false
     @database = nil
-
+    Rails.logger.debug("[PERFORMANCE] Soter.reset_database_connections client: #{client.inspect}")
     !!queue
   end
 
@@ -113,7 +113,7 @@ module Soter
 
     database = ::Mongoid.default_client.database.name
     client   = ::Mongoid.default_client.use(database)
-    
+    Rails.logger.debug("[PERFORMANCE] Soter.client: #{client.inspect}")
     @client = client
   end
 
