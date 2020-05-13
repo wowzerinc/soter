@@ -58,20 +58,15 @@ module Soter
 
   def self.reset_database_connections
     @client.close if @client
-    @client = nil
     @queue = nil
     @indexes_created = false
     @database = nil
-    Rails.logger.debug("#{DateTime.now.utc.iso8601} [PERFORMANCE] [#{Process.pid}] Soter.reset_database_connections client: #{@client.object_id}")
+
     !!queue
   end
 
   def self.drop_queue_collection
-    queue.connection[config[:collection]].drop
-  end
-
-  def self.before_worker_start(&callback)
-    callbacks[:before_worker_start] << callback
+    queue.instance_variable_get("@connection").database.drop
   end
 
   def self.on_worker_start(&callback)
@@ -111,9 +106,13 @@ module Soter
   def self.client
     return @client if @client
 
-    client   = ::Mongo::Client.new(config.hosts, config.options)
-    Rails.logger.debug("#{DateTime.now.utc.iso8601} [PERFORMANCE] [#{Process.pid}] Soter.client: #{client.object_id}")
-    @client = client
+    hosts = if config.host
+              [ "#{config.host}:#{config.port}" ]
+            else
+              config.hosts
+            end
+
+    @client = Mongo::Client.new(hosts, config.options)
   end
 
   def self.queue
@@ -145,8 +144,6 @@ module Soter
   end
 
   def self.dispatch_worker
-    return false unless config.dispatch_workers
-
     cleanup_workers
 
     throttle_worker_request
