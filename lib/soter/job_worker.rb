@@ -2,6 +2,7 @@ module Soter
   class JobWorker
 
     require 'digest/md5'
+    require 'securerandom'
 
     def initialize
       @queue        = Soter.queue
@@ -39,13 +40,13 @@ module Soter
     end
 
     def perform
-      log "#{worker_id}: Spawning"
+      log "Spawning"
 
       while true
         unless job = @queue.lock_next(worker_id)
           @queue_misses += 1
 
-          log "#{worker_id}: Queue miss ##{@queue_misses}"
+          log "Queue miss ##{@queue_misses}"
 
           break if queue_miss_sleep_seconds <= 0
 
@@ -60,11 +61,12 @@ module Soter
         GC.start
         @callbacks[:job_start].each { |callback| callback.call(job) }
         touch_worker_file
-        log "#{worker_id}: Starting work on job #{job['_id']}"
-        log "#{worker_id}: Job info =>"
+        start_time = Time.now
+        log "Starting work on job #{job['_id']}"
+        log "Job info =>"
 
         job.each {
-          |key, value| log  "#{worker_id}: {#{key} : #{value}}" }
+          |key, value| log  "{#{key} : #{value}}" }
 
         begin
           handler_class = Soter.recursive_const_get(job['job']['class'])
@@ -72,32 +74,35 @@ module Soter
 
           job_handler.perform
 
-          log "#{worker_id}: " + job_handler.message
+          log job_handler.message
 
           if job_handler.success?
             @queue.complete(job, worker_id)
-            log "#{worker_id}: Completed job #{job['_id']}"
+            log "Completed job #{job['_id']}"
           else
             offset           = Soter.retry_offset(job['attempts']+1)
             job['active_at'] = Time.now.utc + offset
 
             @queue.error(job, job_handler.message)
-            log "#{worker_id}: Failed job #{job['_id']}"
+            log "Failed job #{job['_id']}"
           end
         rescue Exception => e
           @queue.complete(job, worker_id)
-          log "#{worker_id}: Failed job #{job['_id']}" +
+          log "Failed job #{job['_id']}" +
             " with error #{e.message}"
-          log "#{worker_id}: Backtrace =>"
-          e.backtrace.each { |line| log "#{worker_id}: #{line}"}
+          log "Backtrace =>"
+          e.backtrace.each { |line| log line }
           report_error(e)
         ensure
           @callbacks[:job_finish].each { |callback| callback.call(job) }
+
+          end_time = Time.now
+          log "Time taken: #{end_time - start_time}"
         end
 
         break if Soter.worker_slots_full?
       end #while
-      log "#{worker_id}: Harakiri"
+      log "Harakiri"
       @log.close
     end #start
 
@@ -108,7 +113,7 @@ module Soter
     def worker_id
       @worker_id ||=
         Digest::MD5.
-        hexdigest("#{Socket.gethostname}-#{Process.pid}-#{Thread.current}")
+        hexdigest("#{Socket.gethostname}-#{Process.pid}-#{Thread.current}-#{SecureRandom.uuid.gsub("-", "")}")
     end
 
     def fork?
@@ -137,7 +142,7 @@ module Soter
     end
 
     def log(message)
-      @log << message + "\n"
+      @log << "[#{worker_id}][#{Time.now.iso8601}]" + message + "\n"
     end
 
     def queue_misses_limit
