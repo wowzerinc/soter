@@ -142,7 +142,7 @@ module Soter
     end
 
     def log(message)
-      @log << "[#{worker_id}][#{Time.now.iso8601}]" + message + "\n"
+      @log << "[#{worker_id}][#{Time.now.iso8601}] " + message + "\n"
     end
 
     def queue_misses_limit
