@@ -66,7 +66,7 @@ module Soter
   end
 
   def self.drop_queue_collection
-    queue.connection[config[:collection]].drop
+    queue.instance_variable_get("@connection").database.drop
   end
 
   def self.on_worker_start(&callback)
@@ -104,17 +104,15 @@ module Soter
   end
 
   def self.client
-    return config.client
+    return @client if @client
 
-    # return @client if @client
+    hosts = if config.host
+              [ "#{config.host}:#{config.port}" ]
+            else
+              config.hosts
+            end
 
-    # hosts = if config.host
-    #           [ "#{config.host}:#{config.port}" ]
-    #         else
-    #           config.hosts
-    #         end
-
-    # @client = Mongo::Client.new(hosts, config.options)
+    @client = Mongo::Client.new(hosts, config.options)
   end
 
   def self.queue
@@ -146,8 +144,6 @@ module Soter
   end
 
   def self.dispatch_worker
-    return false unless config.dispatch_workers
-
     cleanup_workers
 
     throttle_worker_request
