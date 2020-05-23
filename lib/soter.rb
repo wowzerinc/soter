@@ -21,6 +21,7 @@ module Soter
       priority:      queue_options.delete(:priority) || 0
     }
 
+    Rails.logger.debug("\n[SOTER] enqueue\n")
     job = queue.insert(job)
     dispatch_worker
     return job
@@ -31,6 +32,7 @@ module Soter
   end
 
   def self.reschedule(job_params, active_at)
+    Rails.logger.debug("\n[SOTER] reschedule\n")
     queue.modify({ 'job.params' => job_params },
                  { 'active_at'  => active_at  })
     dispatch_worker
@@ -57,6 +59,7 @@ module Soter
   end
 
   def self.reset_database_connections
+    Rails.logger.debug("\n[SOTER] reset_database_connections\n")
     @client.close if @client
     @queue = nil
     @indexes_created = false
