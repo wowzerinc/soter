@@ -21,7 +21,7 @@ module Soter
       priority:      queue_options.delete(:priority) || 0
     }
 
-    Rails.logger.debug("\n[SOTER] enqueue\n")
+    Rails.logger.debug("[SOTER] enqueue #{job_params.inspect}")
     job = queue.insert(job)
     dispatch_worker
     return job
@@ -32,7 +32,7 @@ module Soter
   end
 
   def self.reschedule(job_params, active_at)
-    Rails.logger.debug("\n[SOTER] reschedule\n")
+    Rails.logger.debug("[SOTER] reschedule #{job_params.inspect}")
     queue.modify({ 'job.params' => job_params },
                  { 'active_at'  => active_at  })
     dispatch_worker

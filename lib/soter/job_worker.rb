@@ -17,9 +17,11 @@ module Soter
       schrodingers_fork do
         Soter.job_worker(true)
         touch_worker_file
+        Rails.logger.debug("\n[SOTER] worker#start")
         Soter.reset_database_connections if fork?
 
         @callbacks[:worker_start].each  { |callback| callback.call(fork?) }
+        Rails.logger.debug("\n[SOTER] worker#perform")
         perform
         @callbacks[:worker_finish].each { |callback| callback.call(fork?) }
 
@@ -31,12 +33,12 @@ module Soter
     private
 
     def schrodingers_fork
-      Rails.logger.debug("\n\n[SOTER] schrodingers_fork...")
+      Rails.logger.debug("[SOTER] schrodingers_fork...")
       if fork?
-        Rails.logger.debug("\n\n[SOTER] fork enabled")
+        Rails.logger.debug("[SOTER] fork enabled")
 
         process_id = fork { yield; exit }
-        Rails.logger.debug("\n[SOTER] PID for proccess: #{process_id}\n\n")
+        Rails.logger.debug("\n[SOTER] PID for proccess: #{process_id}")
         Process.detach(process_id)
       else
         yield
