@@ -21,7 +21,7 @@ module Soter
       priority:      queue_options.delete(:priority) || 0
     }
 
-    Rails.logger.debug("\n\n[SOTER]\n enqueue #{job_params.inspect}")
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][DB_ID #{::Mongoid.default_client.object_id }]\n enqueue #{job_params.inspect}")
     job = queue.insert(job)
     dispatch_worker
     return job
@@ -32,7 +32,7 @@ module Soter
   end
 
   def self.reschedule(job_params, active_at)
-    Rails.logger.debug("\n\n[SOTER]\n reschedule #{job_params.inspect}")
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][DB_ID #{::Mongoid.default_client.object_id }]\n reschedule #{job_params.inspect}")
     queue.modify({ 'job.params' => job_params },
                  { 'active_at'  => active_at  })
     dispatch_worker
@@ -59,7 +59,7 @@ module Soter
   end
 
   def self.reset_database_connections
-    Rails.logger.debug("\n\n[SOTER]\n reset_database_connections\n")
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][DB_ID #{::Mongoid.default_client.object_id }]\n reset_database_connections\n")
     @client.close if @client
     @queue = nil
     @indexes_created = false
@@ -147,7 +147,7 @@ module Soter
   end
 
   def self.dispatch_worker
-    Rails.logger.debug("\n\n[SOTER]\n dispatch_worker")
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][DB_ID #{::Mongoid.default_client.object_id }]\n dispatch_worker")
     cleanup_workers
 
     throttle_worker_request
