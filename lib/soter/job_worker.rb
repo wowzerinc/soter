@@ -31,8 +31,12 @@ module Soter
     private
 
     def schrodingers_fork
+      Rails.logger.debug("\n\n[SOTER] schrodingers_fork...")
       if fork?
+        Rails.logger.debug("\n\n[SOTER] fork enabled")
+
         process_id = fork { yield; exit }
+        Rails.logger.debug("\n[SOTER] PID for proccess: #{process_id}\n\n")
         Process.detach(process_id)
       else
         yield
