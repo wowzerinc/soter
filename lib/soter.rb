@@ -147,7 +147,7 @@ module Soter
   end
 
   def self.dispatch_worker
-    Rails.logger.debug("\n\n[SOTER]\n dispatch_worker #{job_params.inspect}")
+    Rails.logger.debug("\n\n[SOTER]\n dispatch_worker")
     cleanup_workers
 
     throttle_worker_request
