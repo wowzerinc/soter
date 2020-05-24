@@ -25,57 +25,23 @@ module Soter
 
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n enqueue #{job_params.inspect}")
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]\n enqueue\n") if @client
-    job = queue.insert(job)
+    job = queue_command(:insert, job)
     dispatch_worker
     return job
   end
 
   def self.dequeue(job_params)
-    queue.remove({ 'job.params' => job_params })
+    queue_command(:remove, { 'job.params' => job_params })
   end
 
-  # def self.reschedule(job_params, active_at)
-  #   retries ||= 0
-  #   Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n reschedule #{job_params.inspect}")
-  #   Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]\n reschedule\n") if @client
-  #   queue.modify({ 'job.params' => job_params },
-  #                { 'active_at'  => active_at  })
-  #   dispatch_worker
-  # rescue Mongo::Error::SocketError => error
-  #   retries += 1
-  #   Rails.logger.debug("\n\n#{error.class}")
-  #   Rails.logger.debug(error.message)
-  #   Rails.logger.debug(error.backtrace.join("\n") + "\n\n")
-  #   Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] RESCHEDULE FAILED!!!\n\nResetting the database, retry ##{retries}")
-  #   reset_database_connections
-  #   Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] RESCHEDULE FAILED!!!\n\nReady for retry")
-  #   retry
-  # end
-  # v2
   def self.reschedule(job_params, active_at)
-    retries ||= 0
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n reschedule #{job_params.inspect}")
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]\n reschedule\n") if @client
-    unless @client.cluster.connected?
-      Rails.logger.debug("\n\n********\n\n********\n CLUSTER WASN'T CONNECTED!\n Triggering reconnection\n\n********\n\n********\n\n\n********\n\n********\n")
-      reset_database_connections
-    end
-    queue.modify({ 'job.params' => job_params },
-                 { 'active_at'  => active_at  })
+    queue_command(:modify, { 'job.params' => job_params },
+                           { 'active_at'  => active_at  })
     dispatch_worker
-  rescue Mongo::Error::SocketError => error
-    retries += 1
-    Rails.logger.debug("\n\n#{error.class}")
-    Rails.logger.debug(error.message)
-    Rails.logger.debug(error.backtrace.join("\n") + "\n\n")
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] CATASTROPHIC ERRROR RESCHEDULE FAILED!!!\n\nResetting the database, retry ##{retries}")
-    reset_database_connections
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] CATASTROPHIC ERRROR RESCHEDULE FAILED!!!\n\nReady for retry")
-    retry
   end
 
   def self.update(id, changes={})
-    queue.modify({ '_id' => BSON::ObjectId.from_string(id) }, changes)
+    queue_command(:modify, { '_id' => BSON::ObjectId.from_string(id) }, changes)
   end
 
   def self.queued?(handler, job_params={})
@@ -87,7 +53,7 @@ module Soter
       'attempts' => 0
     }
 
-    queue.find(query).count != 0
+    queue_command(:find, query).count != 0
   end
 
   def self.keep_alive(id)
@@ -253,4 +219,21 @@ module Soter
     end
   end
 
+  def self.queue_command(command, *args)
+    retries ||= 0
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n Queue command #{command} #{args.inspect}")
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]") if @client
+    queue.send(command, *args)
+  rescue Mongo::Error::SocketError => error
+    retries += 1
+    Rails.logger.debug("\n\n#{error.class}")
+    Rails.logger.debug(error.message)
+    Rails.logger.debug(error.backtrace.join("\n") + "\n\n")
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] #{command} FAILED!!!\n\nResetting the database, retry ##{retries}")
+    reset_database_connections
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] #{command} FAILED!!!\n\nReady for retry")
+    retry if retries < 2
+
+    raise error
+  end
 end
