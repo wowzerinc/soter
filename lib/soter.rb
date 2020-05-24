@@ -40,7 +40,10 @@ module Soter
     queue.modify({ 'job.params' => job_params },
                  { 'active_at'  => active_at  })
     dispatch_worker
-  rescue => Mongo::Error::SocketError
+  rescue Mongo::Error::SocketError => error
+    Rails.logger.debug("\n\n#{error.class}")
+    Rails.logger.debug(error.message)
+    Rails.logger.debug(error.backtrace.join("\n") + "\n\n")
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] RESCHEDULE FAILED!!!\n\nResetting the database")
     reset_database_connections
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] RESCHEDULE FAILED!!!\n\nReady for retry")
