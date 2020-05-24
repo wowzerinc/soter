@@ -34,10 +34,32 @@ module Soter
     queue.remove({ 'job.params' => job_params })
   end
 
+  # def self.reschedule(job_params, active_at)
+  #   retries ||= 0
+  #   Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n reschedule #{job_params.inspect}")
+  #   Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]\n reschedule\n") if @client
+  #   queue.modify({ 'job.params' => job_params },
+  #                { 'active_at'  => active_at  })
+  #   dispatch_worker
+  # rescue Mongo::Error::SocketError => error
+  #   retries += 1
+  #   Rails.logger.debug("\n\n#{error.class}")
+  #   Rails.logger.debug(error.message)
+  #   Rails.logger.debug(error.backtrace.join("\n") + "\n\n")
+  #   Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] RESCHEDULE FAILED!!!\n\nResetting the database, retry ##{retries}")
+  #   reset_database_connections
+  #   Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] RESCHEDULE FAILED!!!\n\nReady for retry")
+  #   retry
+  # end
+  # v2
   def self.reschedule(job_params, active_at)
     retries ||= 0
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n reschedule #{job_params.inspect}")
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]\n reschedule\n") if @client
+    unless @client.cluster.connected?
+      Rails.logger.debug("\n\n********\n\n********\n CLUSTER WASN'T CONNECTED!\n Triggering reconnection\n\n********\n\n********\n\n\n********\n\n********\n")
+      reset_database_connections
+    end
     queue.modify({ 'job.params' => job_params },
                  { 'active_at'  => active_at  })
     dispatch_worker
@@ -46,9 +68,9 @@ module Soter
     Rails.logger.debug("\n\n#{error.class}")
     Rails.logger.debug(error.message)
     Rails.logger.debug(error.backtrace.join("\n") + "\n\n")
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] RESCHEDULE FAILED!!!\n\nResetting the database, retry ##{retries}")
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] CATASTROPHIC ERRROR RESCHEDULE FAILED!!!\n\nResetting the database, retry ##{retries}")
     reset_database_connections
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] RESCHEDULE FAILED!!!\n\nReady for retry")
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] CATASTROPHIC ERRROR RESCHEDULE FAILED!!!\n\nReady for retry")
     retry
   end
 
