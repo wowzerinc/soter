@@ -16,11 +16,13 @@ module Soter
     def start
       schrodingers_fork do
         Soter.job_worker(true)
+        @callbacks[:worker_start].each  { |callback| callback.call(fork?) }
+
         touch_worker_file
         Rails.logger.debug("\n\n[SOTER_WORKER][PID #{Process.pid}][DB_ID #{::Mongoid.default_client.object_id }]\n worker#start")
         Soter.reset_database_connections if fork?
 
-        @callbacks[:worker_start].each  { |callback| callback.call(fork?) }
+        #@callbacks[:worker_start].each  { |callback| callback.call(fork?) }
         Rails.logger.debug("\n\n[SOTER_WORKER][PID #{Process.pid}][DB_ID #{::Mongoid.default_client.object_id }]\n worker#perform")
         perform
         @callbacks[:worker_finish].each { |callback| callback.call(fork?) }
