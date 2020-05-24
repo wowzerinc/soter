@@ -74,6 +74,7 @@ module Soter
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n reset_database_connections\n")
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]\n reset_database_connections\n") if @client
     @client.close if @client
+    @client.reconnect if @client
     @queue = nil
     @indexes_created = false
     @database = nil
