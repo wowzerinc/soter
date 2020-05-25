@@ -119,8 +119,9 @@ module Soter
             else
               config.hosts
             end
-
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] CREATING NEW SOTER CLIENT AFTER RESTART?\n")
     @client = Mongo::Client.new(hosts, config.options)
+    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] CREATING NEW SOTER CLIENT AFTER RESTART -> #{@client.object_id}\n")
   end
 
   def self.queue
