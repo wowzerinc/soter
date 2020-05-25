@@ -232,7 +232,7 @@ module Soter
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] #{command} FAILED!!!\n\nResetting the database, retry ##{retries}")
     reset_database_connections
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] #{command} FAILED!!!\n\nReady for retry")
-    retry if retries < 2
+    #retry if retries < 2
 
     raise error
   end
