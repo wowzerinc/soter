@@ -64,8 +64,8 @@ module Soter
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n reset_database_connections\n")
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]\n reset_database_connections\n") if @client
     @client.close if @client
-    #@client.reconnect if @client
-    @client = nil
+    @client.reconnect if @client
+
     @queue = nil
     @indexes_created = false
     @database = nil
@@ -119,11 +119,8 @@ module Soter
             else
               config.hosts
             end
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] CREATING NEW SOTER CLIENT AFTER RESTART?\n")
-    @client = Mongo::Client.new(hosts, config.options)
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] CREATING NEW SOTER CLIENT AFTER RESTART -> #{@client.object_id}\n")
 
-    @client
+    @client = Mongo::Client.new(hosts, config.options)
   end
 
   def self.queue
@@ -236,7 +233,7 @@ module Soter
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] #{command} FAILED!!!\n\nResetting the database, retry ##{retries}")
     reset_database_connections
     Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] #{command} FAILED!!!\n\nReady for retry")
-    #retry if retries < 2
+    retry if retries < 2
 
     raise error
   end
