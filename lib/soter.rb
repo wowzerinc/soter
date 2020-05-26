@@ -23,8 +23,6 @@ module Soter
       priority:      queue_options.delete(:priority) || 0
     }
 
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n enqueue #{job_params.inspect}")
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]\n enqueue\n") if @client
     job = queue_command(:insert, job)
     dispatch_worker
     return job
@@ -61,10 +59,10 @@ module Soter
   end
 
   def self.reset_database_connections
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n reset_database_connections\n")
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]\n reset_database_connections\n") if @client
-    @client.close if @client
-    @client.reconnect if @client
+    if @client
+      @client.close
+      @client.reconnect
+    end
 
     @queue = nil
     @indexes_created = false
@@ -152,8 +150,6 @@ module Soter
   end
 
   def self.dispatch_worker
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n dispatch_worker\n")
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]\n dispatch_worker\n") if @client
     cleanup_workers
 
     throttle_worker_request
@@ -222,17 +218,14 @@ module Soter
 
   def self.queue_command(command, *args)
     retries ||= 0
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][WP_DB_ID #{::Mongoid.default_client.object_id }]\n Queue command #{command} #{args.inspect}")
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}][SOT_DB_ID #{@client.object_id }]") if @client
+
     queue.send(command, *args)
   rescue Mongo::Error::SocketError => error
+    Rails.logger.info("\n\nError while attempting to access Soter queue, retrying...\n")
     retries += 1
-    Rails.logger.debug("\n\n#{error.class}")
-    Rails.logger.debug(error.message)
-    Rails.logger.debug(error.backtrace.join("\n") + "\n\n")
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] #{command} FAILED!!!\n\nResetting the database, retry ##{retries}")
+
     reset_database_connections
-    Rails.logger.debug("\n\n[SOTER][PID #{Process.pid}] #{command} FAILED!!!\n\nReady for retry")
+
     retry if retries < 2
 
     raise error

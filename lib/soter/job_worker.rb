@@ -19,11 +19,11 @@ module Soter
         @callbacks[:worker_start].each  { |callback| callback.call(fork?) }
 
         touch_worker_file
-        Rails.logger.debug("\n\n[SOTER_WORKER][PID #{Process.pid}][DB_ID #{::Mongoid.default_client.object_id }]\n worker#start")
+
         Soter.reset_database_connections if fork?
 
         #@callbacks[:worker_start].each  { |callback| callback.call(fork?) }
-        Rails.logger.debug("\n\n[SOTER_WORKER][PID #{Process.pid}][DB_ID #{::Mongoid.default_client.object_id }]\n worker#perform")
+
         perform
         @callbacks[:worker_finish].each { |callback| callback.call(fork?) }
 
@@ -35,12 +35,8 @@ module Soter
     private
 
     def schrodingers_fork
-      Rails.logger.debug("\n\n[SOTER_WORKER][PID #{Process.pid}][DB_ID #{::Mongoid.default_client.object_id }]\n schrodingers_fork...")
       if fork?
-        Rails.logger.debug("\n\n[SOTER_WORKER][PID #{Process.pid}][DB_ID #{::Mongoid.default_client.object_id }]\n fork enabled")
-
         process_id = fork { yield; exit }
-        Rails.logger.debug("\n\n[SOTER_WORKER][PID #{Process.pid}][DB_ID #{::Mongoid.default_client.object_id }]\n PID for proccess: #{process_id}")
         Process.detach(process_id)
       else
         yield
