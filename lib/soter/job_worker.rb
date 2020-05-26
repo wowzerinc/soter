@@ -22,8 +22,6 @@ module Soter
 
         Soter.reset_database_connections if fork?
 
-        #@callbacks[:worker_start].each  { |callback| callback.call(fork?) }
-
         perform
         @callbacks[:worker_finish].each { |callback| callback.call(fork?) }
 
@@ -146,7 +144,7 @@ module Soter
     end
 
     def log(message)
-      @log << "[PID #{Process.pid}][#{worker_id}][#{Time.now.iso8601}] " + message + "\n"
+      @log << "[#{worker_id}][#{Time.now.iso8601}] " + message + "\n"
     end
 
     def queue_misses_limit
