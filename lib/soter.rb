@@ -8,6 +8,8 @@ module Soter
 
   attr_accessor :client
 
+  QUEUE_COMMAND_RETRIES_LIMIT = 1
+
   def self.config
     @config ||= Soter::Config.new
   end
@@ -130,7 +132,7 @@ module Soter
   end
 
   def self.create_indexes
-    collection = queue.send(:collection)
+    collection = queue_command(:collection)
     indexes    = collection.indexes
 
     indexes.create_one('_id' => 1)
@@ -161,7 +163,7 @@ module Soter
 
   def self.cleanup_workers
     #Clear all timed-out jobs
-    queue.cleanup!
+    queue_command(:cleanup!)
 
     #Find all the long-running workers
     long_running_workers = workers.select do |worker|
@@ -174,7 +176,7 @@ module Soter
 
     unless long_running_workers.empty?
       #Find all the currently active workers
-      busy_workers = queue.send(:collection).
+      busy_workers = queue_command(:collection).
                      find(:locked_by => {"$ne" => nil}).
                      distinct(:locked_by) || []
 
@@ -226,7 +228,7 @@ module Soter
 
     reset_database_connections
 
-    retry if retries < 2
+    retry if retries < QUEUE_COMMAND_RETRIES_LIMIT
 
     raise error
   end
