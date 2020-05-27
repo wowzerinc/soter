@@ -7,6 +7,8 @@ require 'mongo_queue'
 module Soter
   QUEUE_COMMAND_RETRIES_LIMIT = 1
 
+  attr_accessor :client
+
   def self.config
     @config ||= Soter::Config.new
   end
