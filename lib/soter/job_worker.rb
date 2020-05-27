@@ -16,10 +16,12 @@ module Soter
     def start
       schrodingers_fork do
         Soter.job_worker(true)
+        @callbacks[:worker_start].each  { |callback| callback.call(fork?) }
+
         touch_worker_file
+
         Soter.reset_database_connections if fork?
 
-        @callbacks[:worker_start].each  { |callback| callback.call(fork?) }
         perform
         @callbacks[:worker_finish].each { |callback| callback.call(fork?) }
 

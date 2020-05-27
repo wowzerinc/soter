@@ -5,6 +5,9 @@ require 'mongo'
 require 'mongo_queue'
 
 module Soter
+  QUEUE_COMMAND_RETRIES_LIMIT = 1
+
+  attr_accessor :client
 
   def self.config
     @config ||= Soter::Config.new
@@ -21,23 +24,23 @@ module Soter
       priority:      queue_options.delete(:priority) || 0
     }
 
-    job = queue.insert(job)
+    job = queue_command(:insert, job)
     dispatch_worker
     return job
   end
 
   def self.dequeue(job_params)
-    queue.remove({ 'job.params' => job_params })
+    queue_command(:remove, { 'job.params' => job_params })
   end
 
   def self.reschedule(job_params, active_at)
-    queue.modify({ 'job.params' => job_params },
-                 { 'active_at'  => active_at  })
+    queue_command(:modify, { 'job.params' => job_params },
+                           { 'active_at'  => active_at  })
     dispatch_worker
   end
 
   def self.update(id, changes={})
-    queue.modify({ '_id' => BSON::ObjectId.from_string(id) }, changes)
+    queue_command(:modify, { '_id' => BSON::ObjectId.from_string(id) }, changes)
   end
 
   def self.queued?(handler, job_params={})
@@ -49,7 +52,7 @@ module Soter
       'attempts' => 0
     }
 
-    queue.find(query).count != 0
+    queue_command(:find, query).count != 0
   end
 
   def self.keep_alive(id)
@@ -57,7 +60,11 @@ module Soter
   end
 
   def self.reset_database_connections
-    @client.close if @client
+    if @client
+      @client.close
+      @client.reconnect
+    end
+
     @queue = nil
     @indexes_created = false
     @database = nil
@@ -124,7 +131,7 @@ module Soter
   end
 
   def self.create_indexes
-    collection = queue.send(:collection)
+    collection = queue_command(:collection)
     indexes    = collection.indexes
 
     indexes.create_one('_id' => 1)
@@ -155,7 +162,7 @@ module Soter
 
   def self.cleanup_workers
     #Clear all timed-out jobs
-    queue.cleanup!
+    queue_command(:cleanup!)
 
     #Find all the long-running workers
     long_running_workers = workers.select do |worker|
@@ -168,7 +175,7 @@ module Soter
 
     unless long_running_workers.empty?
       #Find all the currently active workers
-      busy_workers = queue.send(:collection).
+      busy_workers = queue_command(:collection).
                      find(:locked_by => {"$ne" => nil}).
                      distinct(:locked_by) || []
 
@@ -210,4 +217,18 @@ module Soter
     end
   end
 
+  def self.queue_command(command, *args)
+    retries ||= 0
+
+    queue.send(command, *args)
+  rescue Mongo::Error::SocketError => error
+    Rails.logger.info("\n\nError while attempting to access Soter queue, retrying...\n")
+    retries += 1
+
+    reset_database_connections
+
+    retry if retries < QUEUE_COMMAND_RETRIES_LIMIT
+
+    raise error
+  end
 end
