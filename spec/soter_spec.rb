@@ -158,6 +158,23 @@ describe Soter do
       expect(job['keep_alive_at'].to_i).to be_within(2).of(current_time.to_i)
     end
 
+    it "tries the operation #{Soter::QUEUE_COMMAND_TRIES_LIMIT} time(s)" do
+      bad_queue = object_double(Soter.queue)
+      allow(bad_queue).to receive(:insert).and_raise(Mongo::Error::SocketError)
+
+      allow(Soter).to receive(:queue).and_return(bad_queue, Soter.queue)
+
+      expect do
+        Soter.enqueue(handler, job_params)
+      end.not_to raise_error
+
+      #cleanup! and collection are also called
+      allow(Soter).to receive(:queue).at_most(Soter::QUEUE_COMMAND_TRIES_LIMIT + 2).times.and_return(bad_queue)
+
+      expect do
+        Soter.enqueue(handler, job_params)
+      end.to raise_error(Mongo::Error::SocketError)
+    end
   end
 
   context "workers" do
