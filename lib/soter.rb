@@ -5,7 +5,7 @@ require 'mongo'
 require 'mongo_queue'
 
 module Soter
-  QUEUE_COMMAND_RETRIES_LIMIT = 1
+  QUEUE_COMMAND_TRIES_LIMIT = 2
 
   attr_accessor :client
 
@@ -218,16 +218,16 @@ module Soter
   end
 
   def self.queue_command(command, *args)
-    retries ||= 0
+    tries ||= 0
 
     queue.send(command, *args)
   rescue Mongo::Error::SocketError => error
-    Rails.logger.info("\n\nError while attempting to access Soter queue, retrying...\n")
-    retries += 1
+    Rails.logger.info("\n\nError while attempting to access Soter queue, try ##{tries}\n") if defined?(Rails)
+    tries += 1
 
     reset_database_connections
 
-    retry if retries < QUEUE_COMMAND_RETRIES_LIMIT
+    retry if tries < QUEUE_COMMAND_TRIES_LIMIT
 
     raise error
   end
