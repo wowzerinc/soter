@@ -223,7 +223,6 @@ module Soter
     queue.send(command, *args)
   rescue Mongo::Error::SocketError => error
     Rails.logger.info("\n\nError while attempting to access Soter queue, try ##{tries}\n") if defined?(Rails)
-
     tries += 1
 
     reset_database_connections
