@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/wepow/mongo_queue.git
-  revision: 7008ee41cfa1eb9dbd396a22b220b75fd780c438
+  revision: c9726352c4f4a11ea4e70256e004807f4d07d66f
   branch: mongo-2.x
   specs:
     mongo_queue (0.2.4)
